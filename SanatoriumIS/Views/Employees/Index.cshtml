@@ -1,0 +1,291 @@
+﻿@model IEnumerable<SanatoriumIS.Models.Employee>
+
+@{
+    ViewData["Title"] = "Сотрудники";
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show m-3" role="alert">
+        <i class="bi bi-check-circle me-2"></i> @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="container-fluid px-4 mt-4">
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="px-4 py-3" style="background: linear-gradient(145deg, #2d5a3b 0%, #3d6e4a 100%);">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="text-white mb-0 fw-bold">
+                        <i class="bi bi-people-fill me-2"></i> Сотрудники
+                    </h2>
+                    <p class="text-white-50 mb-0 mt-1">Управление персоналом санатория</p>
+                </div>
+                <a asp-action="Create" class="btn btn-light rounded-pill px-4 py-2 fw-semibold shadow-sm" style="color: #2d5a3b;">
+                    <i class="bi bi-plus-circle me-2"></i> Добавить сотрудника
+                </a>
+            </div>
+        </div>
+        <div class="p-0">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead style="background-color: #f8f9fc; border-bottom: 2px solid #e9ecef;">
+                            <tr>
+                                <th class="ps-4 py-3 fw-semibold" style="color: #2d5a3b;">ФИО</th>
+                                <th class="py-3 fw-semibold" style="color: #2d5a3b;">Должность</th>
+                                <th class="py-3 fw-semibold" style="color: #2d5a3b;">Специализация</th>
+                                <th class="py-3 fw-semibold" style="color: #2d5a3b;">Кабинет</th>
+                                <th class="py-3 fw-semibold" style="color: #2d5a3b;">Статус</th>
+                                <th class="pe-4 py-3 text-center fw-semibold" style="color: #2d5a3b; width: 280px;">Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr style="border-bottom: 1px solid #f0f2f5;">
+                                    <td class="ps-4 py-3 fw-medium">
+                                        <i class="bi bi-person-badge text-success me-2"></i>
+                                        @item.FullName
+                                    </td>
+                                    <td class="py-3">
+                                        <span class="badge bg-light text-dark px-3 py-2 rounded-pill">
+                                            <i class="bi bi-briefcase me-1 text-primary"></i> @item.Position
+                                        </span>
+                                    </td>
+                                    <td class="py-3">
+                                        @if (!string.IsNullOrEmpty(item.Specialization))
+                                        {
+                                            <span class="badge bg-info bg-opacity-10 text-info px-3 py-2 rounded-pill">
+                                                <i class="bi bi-tag me-1"></i> @item.Specialization
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">---</span>
+                                        }
+                                    </td>
+                                    <td class="py-3">
+                                        @if (item.ProcedureRoom != null)
+                                        {
+                                            <span class="badge bg-light text-dark px-3 py-2 rounded-pill">
+                                                <i class="bi bi-building me-1 text-primary"></i>
+                                                @item.ProcedureRoom.Name (№@item.ProcedureRoom.RoomNumber)
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Не назначен</span>
+                                        }
+                                    </td>
+                                    <td class="py-3">
+                                        @if (item.IsActive)
+                                        {
+                                            <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">
+                                                <i class="bi bi-check-circle me-1"></i> Активен
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill">
+                                                <i class="bi bi-x-circle me-1"></i> Уволен
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="pe-4 py-3 text-center">
+                                        <div class="d-flex gap-2 justify-content-center">
+                                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm px-3 py-1.5 rounded-pill shadow-sm"
+                                               style="background: linear-gradient(135deg, #7cb19d 0%, #6b9e8a 100%); color: white; border: none;">
+                                                <i class="bi bi-eye me-1"></i> Детали
+                                            </a>
+                                            @if (item.HasSystemAccess && item.IdentityUser != null)
+                                            {
+                                                <button type="button" class="btn btn-sm px-3 py-1.5 rounded-pill shadow-sm reset-password-btn"
+                                                        data-id="@item.Id" data-name="@item.FullName"
+                                                        style="background: linear-gradient(135deg, #ff9800 0%, #fb8c00 100%); color: white; border: none;">
+                                                    <i class="bi bi-key me-1"></i> Сброс пароля
+                                                </button>
+                                            }
+                                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm px-3 py-1.5 rounded-pill shadow-sm"
+                                               style="background: linear-gradient(135deg, #c43333 0%, #a33333 100%); color: white; border: none;">
+                                                <i class="bi bi-trash me-1"></i> Удалить
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5 my-5">
+                    <div class="display-1 text-muted">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <h3 class="text-muted mt-3">Нет сотрудников</h3>
+                    <p class="text-muted mb-4">Добавьте первого сотрудника в систему</p>
+                    <a asp-action="Create" class="btn rounded-pill px-4 py-2 shadow-sm" style="background: linear-gradient(135deg, #2d5a3b 0%, #3d6e4a 100%); color: white;">
+                        <i class="bi bi-plus-circle me-2"></i> Добавить сотрудника
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для отображения пароля при создании сотрудника -->
+<div class="modal fade" id="newPasswordModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0" style="background: linear-gradient(135deg, #2d5a3b 0%, #3d6e4a 100%); border-radius: 20px 20px 0 0;">
+                <h5 class="modal-title text-white fw-bold">
+                    <i class="bi bi-key me-2"></i> Учётная запись создана
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p>Для сотрудника создана учётная запись.</p>
+
+                <div class="alert alert-info">
+                    <i class="bi bi-envelope me-2"></i>
+                    <strong>Email:</strong> <span id="newEmployeeEmail"></span>
+                </div>
+
+                <div class="alert alert-success">
+                    <i class="bi bi-key me-2"></i>
+                    <strong>Временный пароль:</strong>
+                    <div class="mt-2">
+                        <code id="newEmployeePassword" style="font-size: 18px; font-weight: bold; padding: 8px 12px; background: #f0f0f0; border-radius: 8px; display: inline-block;"></code>
+                        <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="copyNewPasswordBtn">
+                            <i class="bi bi-clipboard"></i> Копировать
+                        </button>
+                    </div>
+                </div>
+
+                <p class="text-muted small mb-0 mt-3">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Роль в системе: <strong id="newEmployeeRole"></strong>
+                </p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-success rounded-pill px-4" data-bs-dismiss="modal">
+                    <i class="bi bi-check-circle me-2"></i> Понятно
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для сброса пароля -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0" style="background: linear-gradient(135deg, #ff9800 0%, #fb8c00 100%); border-radius: 20px 20px 0 0;">
+                <h5 class="modal-title text-white fw-bold">
+                    <i class="bi bi-key me-2"></i> Новый пароль
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p>Новый пароль для сотрудника <strong id="resetEmployeeName"></strong>:</p>
+                <div class="alert alert-success text-center">
+                    <code id="resetPassword" style="font-size: 18px; font-weight: bold;"></code>
+                </div>
+                <p class="text-muted small mb-0">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Пароль сохранён в зашифрованном виде. Сообщите его сотруднику.
+                </p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-sm rounded-pill px-3" style="background-color: #f0f2f5; color: #555;" data-bs-dismiss="modal">
+                    Закрыть
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-sm {
+        transition: all 0.2s ease;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+        .btn-sm:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.05);
+        }
+
+    .table tbody tr:hover {
+        background-color: #f8f9fc;
+        transition: all 0.2s;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        // Копирование пароля при создании сотрудника
+        $('#copyNewPasswordBtn').on('click', function() {
+            const password = $('#newEmployeePassword').text();
+            navigator.clipboard.writeText(password).then(function() {
+                alert('Пароль скопирован в буфер обмена');
+            }).catch(function() {
+                alert('Не удалось скопировать пароль');
+            });
+        });
+
+        // Проверяем TempData и показываем модальное окно
+        @if (TempData["ShowPasswordModal"] != null && TempData["ShowPasswordModal"].ToString() == "true")
+        {
+                <text>
+                        $(document).ready(function() {
+                            $('#newEmployeeName').text('@TempData["NewEmployeeName"]');
+                            $('#newEmployeeEmail').text('@TempData["NewEmployeeEmail"]');
+                            $('#newEmployeePassword').text('@TempData["NewPassword"]');
+                            $('#newEmployeeRole').text('@TempData["NewEmployeeRole"]');
+                            $('#newPasswordModal').modal('show');
+                        });
+                </text>
+        }
+
+        // Сброс пароля
+        $('.reset-password-btn').on('click', function() {
+            const btn = $(this);
+            const employeeId = btn.data('id');
+            const employeeName = btn.data('name');
+
+            if (!confirm(`Сбросить пароль для сотрудника "${employeeName}"?`)) {
+                return;
+            }
+
+            const originalText = btn.html();
+            btn.html('<i class="bi bi-hourglass-split me-1"></i> Сброс...').prop('disabled', true);
+
+            $.ajax({
+                url: '/Employees/ResetPassword',
+                type: 'POST',
+                data: { id: employeeId },
+                success: function(response) {
+                    if (response.success) {
+                        $('#resetEmployeeName').text(employeeName);
+                        $('#resetPassword').text(response.password);
+                        $('#resetPasswordModal').modal('show');
+                    } else {
+                        alert('Ошибка: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('Ошибка при сбросе пароля');
+                },
+                complete: function() {
+                    btn.html(originalText).prop('disabled', false);
+                }
+            });
+        });
+    </script>
+}

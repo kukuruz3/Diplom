@@ -1,0 +1,433 @@
+﻿@model SanatoriumIS.Models.Booking
+
+@{
+    ViewData["Title"] = "Добавление бронирования";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="px-4 py-3" style="background: linear-gradient(145deg, #2d5a3b 0%, #3d6e4a 100%);">
+                    <h3 class="text-white mb-0 fw-bold">
+                        <i class="bi bi-calendar-plus me-2"></i> Новое бронирование
+                    </h3>
+                    <p class="text-white-50 mb-0 mt-1">Заполните информацию о бронировании</p>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create" id="bookingForm">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3"></div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label asp-for="CheckIn" class="form-label fw-semibold mb-2">
+                                    <i class="bi bi-calendar3 me-1 text-success"></i> Дата заезда <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="CheckIn" id="CheckIn" class="form-control form-control-lg rounded-3" type="date" style="background-color: #f8f9fc;" />
+                                <span asp-validation-for="CheckIn" class="text-danger small mt-1"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-4">
+                                <label asp-for="CheckOut" class="form-label fw-semibold mb-2">
+                                    <i class="bi bi-calendar3 me-1 text-danger"></i> Дата выезда <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="CheckOut" id="CheckOut" class="form-control form-control-lg rounded-3" type="date" style="background-color: #f8f9fc;" />
+                                <span asp-validation-for="CheckOut" class="text-danger small mt-1"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold mb-2">
+                                <i class="bi bi-door-closed me-1 text-success"></i> Номер <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="RoomId" id="RoomId" class="form-select form-select-lg rounded-3" style="background-color: #f8f9fc;">
+                                <option value="">-- Сначала выберите даты --</option>
+                            </select>
+                            <span asp-validation-for="RoomId" class="text-danger small mt-1"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="ClientId" class="form-label fw-semibold mb-2">
+                                <i class="bi bi-person me-1 text-success"></i> Первый клиент <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="ClientId" id="ClientId" class="form-select form-select-lg rounded-3" style="background-color: #f8f9fc;" disabled>
+                                <option value="">-- Сначала выберите даты --</option>
+                            </select>
+                            <span asp-validation-for="ClientId" class="text-danger small mt-1"></span>
+                        </div>
+
+                        <div class="mb-4" id="secondClientBlock" style="display: none;">
+                            <label asp-for="SecondClientId" class="form-label fw-semibold mb-2">
+                                <i class="bi bi-person me-1 text-success"></i> Второй клиент
+                            </label>
+                            <select asp-for="SecondClientId" id="SecondClientId"
+                                    class="form-select form-select-lg rounded-3"
+                                    style="background-color: #f8f9fc;">
+                                <option value="">-- Сначала выберите первого клиента --</option>
+                            </select>
+                            <span asp-validation-for="SecondClientId" class="text-danger small mt-1"></span>
+                            <div id="secondClientHint" class="text-info small mt-1" style="display: none;">
+                                <i class="bi bi-info-circle"></i> Для двухместного номера необходимо выбрать второго клиента
+                            </div>
+                        </div>
+
+                        @await Html.PartialAsync("_SelectServices", new int[0])
+
+                        <div class="alert alert-info rounded-3 mb-3">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Правила бронирования:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Минимальный срок бронирования - 1 сутки</li>
+                                <li>Максимальный срок бронирования - 30 суток</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-flex gap-3 mt-4 pt-3">
+                            <button type="submit" class="btn px-4 py-2 rounded-pill shadow-sm fw-semibold"
+                                    style="background: linear-gradient(135deg, #2d5a3b 0%, #3d6e4a 100%); color: white; min-width: 140px;">
+                                <i class="bi bi-save me-2"></i> Забронировать
+                            </button>
+                            <a href="@Url.Action("Index")" class="close-tab-on-cancel btn btn-secondary rounded-pill px-4 py-2">
+                                <i class="bi bi-arrow-left me-2"></i> Отмена
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-lg rounded-4">
+                <div class="card-header bg-white border-0 pt-4">
+                    <h5 class="fw-bold text-success mb-0">
+                        <i class="bi bi-search me-2"></i> Поиск клиентов
+                    </h5>
+                    <p class="text-muted small mb-0">Найдите клиента по ФИО</p>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <input type="text" id="searchClientInput" class="form-control form-control-lg rounded-3" placeholder="Введите ФИО...">
+                            <button type="button" id="searchClientBtn" class="btn btn-success rounded-3">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="searchResults" class="search-results" style="max-height: 400px; overflow-y: auto;">
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-info-circle fs-4"></i>
+                            <p>Введите текст для поиска</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .search-results .client-item {
+        padding: 12px;
+        border-bottom: 1px solid #e9ecef;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .search-results .client-item:hover {
+            background-color: #e8f5e9;
+            transform: translateX(5px);
+        }
+
+        .search-results .client-item:last-child {
+            border-bottom: none;
+        }
+
+    .search-results .client-name {
+        font-weight: 600;
+        color: #2d5a3b;
+    }
+
+    select:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+</style>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+    <script>
+        let selectedRoomCapacity = 0;
+
+        $(document).ready(function() {
+        // Маски
+        $('#Phone').mask('+7 (000) 000-00-00', {
+        placeholder: '+7 (___) ___-__-__',
+        clearIfNotMatch: false
+        });
+
+        $('#Passport').mask('0000 000000', {
+        placeholder: '____ ______',
+        clearIfNotMatch: false
+        });
+
+        // Проверка перед отправкой формы
+        $('#bookingForm').on('submit', function(e) {
+        const selectedOption = $('#RoomId').find('option:selected');
+        const roomText = selectedOption.text();
+        const isDoubleRoom = roomText.includes('двухместный');
+
+        if (isDoubleRoom) {
+        const secondClientId = $('#SecondClientId').val();
+        if (!secondClientId) {
+        e.preventDefault();
+        alert('Для двухместного номера необходимо выбрать второго клиента!');
+        return false;
+        }
+        }
+        return true;
+        });
+
+        // Загрузка доступных номеров
+        async function loadAvailableRooms() {
+        const checkIn = $('#CheckIn').val();
+        const checkOut = $('#CheckOut').val();
+        const roomSelect = $('#RoomId');
+
+        if (!checkIn || !checkOut) {
+        roomSelect.html('<option value="">-- Сначала выберите даты --</option>');
+        roomSelect.prop('disabled', true);
+        return;
+        }
+
+        if (checkOut <= checkIn) {
+        roomSelect.html('<option value="">-- Дата выезда должна быть позже даты заезда --</option>');
+        roomSelect.prop('disabled', true);
+        return;
+        }
+
+        roomSelect.html('<option value="">-- Загрузка номеров... --</option>');
+        roomSelect.prop('disabled', true);
+
+        try {
+        const response = await fetch(`/Bookings/GetAvailableRooms?checkIn=${encodeURIComponent(checkIn)}&checkOut=${encodeURIComponent(checkOut)}`);
+        const data = await response.json();
+
+        if (data.success && data.rooms && data.rooms.length > 0) {
+        roomSelect.html('<option value="">-- Выберите номер --</option>');
+        data.rooms.forEach(room => {
+        const roomText = `${room.number} (${room.capacity == 1 ? "одноместный" : "двухместный"})`;
+        roomSelect.append(`<option value="${room.id}" data-capacity="${room.capacity}">${roomText}</option>`);
+        });
+        roomSelect.prop('disabled', false);
+        } else {
+        roomSelect.html('<option value="">-- Нет доступных номеров на выбранные даты --</option>');
+        roomSelect.prop('disabled', true);
+        }
+        } catch (error) {
+        console.error('Ошибка загрузки номеров:', error);
+        roomSelect.html('<option value="">-- Ошибка загрузки --</option>');
+        roomSelect.prop('disabled', true);
+        }
+        }
+
+        // Загрузка доступных клиентов
+        async function loadAvailableClients() {
+        const checkIn = $('#CheckIn').val();
+        const checkOut = $('#CheckOut').val();
+        const clientSelect = $('#ClientId');
+
+        if (!checkIn || !checkOut) {
+        clientSelect.html('<option value="">-- Сначала выберите даты --</option>');
+        clientSelect.prop('disabled', true);
+        return;
+        }
+
+        clientSelect.html('<option value="">-- Загрузка клиентов... --</option>');
+        clientSelect.prop('disabled', true);
+
+        try {
+        const response = await fetch(`/Bookings/GetAvailableClientsForDates?checkIn=${encodeURIComponent(checkIn)}&checkOut=${encodeURIComponent(checkOut)}`);
+        const data = await response.json();
+
+        if (data.success && data.clients && data.clients.length > 0) {
+        clientSelect.html('<option value="">-- Выберите клиента --</option>');
+        data.clients.forEach(client => {
+        clientSelect.append(`<option value="${client.id}">${client.fullName}</option>`);
+        });
+        clientSelect.prop('disabled', false);
+        } else {
+        clientSelect.html('<option value="">-- Нет доступных клиентов на выбранные даты --</option>');
+        clientSelect.prop('disabled', true);
+        }
+        } catch (error) {
+        console.error('Ошибка загрузки клиентов:', error);
+        clientSelect.html('<option value="">-- Ошибка загрузки --</option>');
+        clientSelect.prop('disabled', true);
+        }
+        }
+
+        // Загрузка доступных вторых клиентов
+        async function loadAvailableSecondClients() {
+        const checkIn = $('#CheckIn').val();
+        const checkOut = $('#CheckOut').val();
+        const firstClientId = $('#ClientId').val();
+        const secondSelect = $('#SecondClientId');
+
+        if (!checkIn || !checkOut || !firstClientId || selectedRoomCapacity !== 2) {
+        secondSelect.html('<option value="">-- Сначала выберите даты, номер и первого клиента --</option>');
+        secondSelect.prop('disabled', true);
+        return;
+        }
+
+        secondSelect.html('<option value="">-- Загрузка... --</option>');
+        secondSelect.prop('disabled', true);
+
+        try {
+        const response = await fetch(`/Bookings/GetAvailableSecondClients?checkIn=${encodeURIComponent(checkIn)}&checkOut=${encodeURIComponent(checkOut)}&firstClientId=${firstClientId}`);
+        const data = await response.json();
+
+        if (data.success && data.clients && data.clients.length > 0) {
+        secondSelect.html('<option value="">-- Выберите второго клиента --</option>');
+        data.clients.forEach(client => {
+        secondSelect.append(`<option value="${client.id}">${client.fullName}</option>`);
+        });
+        secondSelect.prop('disabled', false);
+        $('#secondClientHint').show().html('<i class="bi bi-info-circle"></i> Выберите второго клиента');
+        } else {
+        secondSelect.html('<option value="">-- Нет доступных клиентов --</option>');
+        secondSelect.prop('disabled', true);
+        $('#secondClientHint').show().html('<div class="text-warning small mt-1"><i class="bi bi-exclamation-triangle"></i> Нет доступных клиентов для выбора в качестве второго</div>');
+        }
+        } catch (error) {
+        console.error('Ошибка загрузки клиентов:', error);
+        secondSelect.html('<option value="">-- Ошибка загрузки --</option>');
+        secondSelect.prop('disabled', true);
+        }
+        }
+
+        // Обработка выбора номера
+        $('#RoomId').on('change', function() {
+        const selectedOption = $(this).find('option:selected');
+        selectedRoomCapacity = selectedOption.data('capacity') || 0;
+
+        if (selectedRoomCapacity === 2) {
+        $('#secondClientBlock').show();
+        if ($('#ClientId').val()) {
+        loadAvailableSecondClients();
+        } else {
+        $('#SecondClientId').html('<option value="">-- Сначала выберите первого клиента --</option>');
+        $('#SecondClientId').prop('disabled', true);
+        }
+        } else {
+        $('#secondClientBlock').hide();
+        $('#SecondClientId').val('');
+        }
+        });
+
+        // Обработка выбора первого клиента
+        $('#ClientId').on('change', function() {
+        if (selectedRoomCapacity === 2 && $(this).val()) {
+        loadAvailableSecondClients();
+        }
+        });
+
+        // Обработка изменения дат - загружаем номера и клиентов
+        $('#CheckIn, #CheckOut').on('change', function() {
+        loadAvailableRooms();
+        loadAvailableClients();
+        });
+
+        // Поиск клиентов
+        $('#searchClientBtn').on('click', async function() {
+        const term = $('#searchClientInput').val();
+        const checkIn = $('#CheckIn').val();
+        const checkOut = $('#CheckOut').val();
+        const resultsContainer = $('#searchResults');
+
+        if (!checkIn || !checkOut) {
+        alert('Сначала выберите даты заезда и выезда');
+        return;
+        }
+
+        if (!term || term.length < 2) {
+        resultsContainer.html('<div class="text-center text-muted py-4"><i class="bi bi-info-circle fs-4"></i><p>Введите минимум 2 символа</p></div>');
+        return;
+        }
+
+        resultsContainer.html('<div class="text-center py-4"><div class="spinner-border text-success"></div><p>Поиск...</p></div>');
+
+        try {
+        const response = await fetch(`/Bookings/SearchClients?term=${encodeURIComponent(term)}&checkIn=${encodeURIComponent(checkIn)}&checkOut=${encodeURIComponent(checkOut)}`);
+        const data = await response.json();
+
+        if (data && data.length > 0) {
+        let html = '';
+        data.forEach(client => {
+        html += `
+        <div class="client-item" data-id="${client.id}" data-name="${client.fullName}">
+        <div class="client-name">${escapeHtml(client.fullName)}</div>
+        </div>
+        `;
+        });
+        resultsContainer.html(html);
+
+        $('.client-item').on('click', function() {
+        const clientId = $(this).data('id');
+        const clientName = $(this).data('name');
+        const currentFirst = $('#ClientId').val();
+
+        if (selectedRoomCapacity === 2 && $('#secondClientBlock').is(':visible')) {
+        if (!currentFirst) {
+        $('#ClientId').val(clientId).trigger('change');
+        alert(`Выбран первый клиент: ${clientName}`);
+        } else if (!$('#SecondClientId').val()) {
+        if (clientId == currentFirst) {
+        alert('Нельзя выбрать одного и того же клиента!');
+        return;
+        }
+        $('#SecondClientId').val(clientId).trigger('change');
+        alert(`Выбран второй клиент: ${clientName}`);
+        } else {
+        if (clientId == currentFirst) {
+        alert('Нельзя выбрать одного и того же клиента!');
+        return;
+        }
+        $('#SecondClientId').val(clientId).trigger('change');
+        alert(`Второй клиент заменён на: ${clientName}`);
+        }
+        } else {
+        $('#ClientId').val(clientId).trigger('change');
+        alert(`Выбран клиент: ${clientName}`);
+        }
+
+        $('#searchClientInput').val('');
+        resultsContainer.html('<div class="text-center text-muted py-4"><i class="bi bi-info-circle fs-4"></i><p>Введите текст для поиска</p></div>');
+        });
+        } else {
+        resultsContainer.html('<div class="text-center text-muted py-4"><i class="bi bi-emoji-frown fs-4"></i><p>Клиенты не найдены</p></div>');
+        }
+        } catch (error) {
+        console.error('Ошибка поиска:', error);
+        resultsContainer.html('<div class="text-center text-danger py-4"><i class="bi bi-exclamation-triangle fs-4"></i><p>Ошибка при поиске</p></div>');
+        }
+        });
+
+        $('#searchClientInput').on('keypress', function(e) {
+        if (e.which === 13) {
+        $('#searchClientBtn').click();
+        }
+        });
+
+        function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+        }
+        });
+    </script>
+}

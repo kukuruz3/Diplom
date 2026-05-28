@@ -1,0 +1,59 @@
+﻿@model SanatoriumIS.Models.Service
+
+@{
+    ViewData["Title"] = "Редактирование услуги";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="px-4 py-3" style="background: linear-gradient(145deg, #4a7c5e 0%, #5a8c6e 100%);">
+                    <h3 class="text-white mb-0 fw-bold">
+                        <i class="bi bi-pencil-square me-2"></i> Редактирование услуги
+                    </h3>
+                    <p class="text-white-50 mb-0 mt-1">Измените информацию о дополнительной услуге</p>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Edit">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3"></div>
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="mb-4">
+                            <label asp-for="Name" class="form-label fw-semibold mb-2">
+                                <i class="bi bi-tag me-1 text-success"></i> Название услуги <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Name" class="form-control form-control-lg rounded-3" style="background-color: #f8f9fc;" />
+                            <span asp-validation-for="Name" class="text-danger small mt-1"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Price" class="form-label fw-semibold mb-2">
+                                <i class="bi bi-currency-ruble me-1 text-success"></i> Стоимость <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Price" class="form-control form-control-lg rounded-3"
+                                   type="number" step="0.01" min="0.01" style="background-color: #f8f9fc;" />
+                            <span asp-validation-for="Price" class="text-danger small mt-1"></span>
+                        </div>
+
+                        <div class="d-flex gap-3 mt-4 pt-3">
+                            <button type="submit" class="btn px-4 py-2 rounded-pill shadow-sm fw-semibold"
+                                    style="background: linear-gradient(135deg, #4a7c5e 0%, #5a8c6e 100%); color: white; min-width: 140px;">
+                                <i class="bi bi-save me-2"></i> Сохранить
+                            </button>
+                            <a href="@Url.Action("Index")" class="close-tab-on-cancel btn btn-secondary rounded-pill px-4 py-2">
+                                <i class="bi bi-arrow-left me-2"></i> Отмена
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

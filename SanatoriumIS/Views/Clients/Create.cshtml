@@ -1,0 +1,100 @@
+﻿@model SanatoriumIS.Models.Client
+
+@{
+    ViewData["Title"] = "Добавление клиента";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="px-4 py-3" style="background: linear-gradient(145deg, #2d5a3b 0%, #3d6e4a 100%);">
+                    <h3 class="text-white mb-0 fw-bold">
+                        <i class="bi bi-person-plus me-2"></i> Добавление клиента
+                    </h3>
+                    <p class="text-white-50 mb-0 mt-1">Заполните информацию о новом клиенте</p>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create" id="clientForm">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3"></div>
+
+                        <div class="mb-4">
+                            <label asp-for="FullName" class="form-label fw-semibold mb-2">
+                                <i class="bi bi-person me-1 text-success"></i> ФИО клиента
+                            </label>
+                            <input asp-for="FullName" class="form-control form-control-lg rounded-3"
+                                   placeholder="Иванов Иван Иванович"
+                                   maxlength="100"
+                                   style="background-color: #f8f9fc;" />
+                            <span asp-validation-for="FullName" class="text-danger small mt-1"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label asp-for="PassportRaw" class="form-label fw-semibold mb-2">
+                                    <i class="bi bi-card-text me-1 text-success"></i> Паспорт
+                                </label>
+                                <input asp-for="PassportRaw" id="Passport" class="form-control form-control-lg rounded-3"
+                                       placeholder="1234 567890"
+                                       maxlength="11"
+                                       style="background-color: #f8f9fc;" />
+                                <span asp-validation-for="PassportRaw" class="text-danger small mt-1"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-4">
+                                <label asp-for="Phone" class="form-label fw-semibold mb-2">
+                                    <i class="bi bi-telephone me-1 text-success"></i> Телефон
+                                </label>
+                                <input asp-for="Phone" id="Phone" class="form-control form-control-lg rounded-3"
+                                       placeholder="+7 (___) ___-__-__"
+                                       maxlength="18"
+                                       style="background-color: #f8f9fc;" />
+                                <span asp-validation-for="Phone" class="text-danger small mt-1"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="BirthDate" class="form-label fw-semibold mb-2">
+                                <i class="bi bi-calendar3 me-1 text-success"></i> Дата рождения
+                            </label>
+                            <input asp-for="BirthDate" class="form-control form-control-lg rounded-3"
+                                   type="date"
+                                   style="background-color: #f8f9fc;" />
+                            <span asp-validation-for="BirthDate" class="text-danger small mt-1"></span>
+                        </div>
+
+                        <div class="d-flex gap-3 mt-4 pt-3">
+                            <button type="submit" class="btn px-4 py-2 rounded-pill shadow-sm fw-semibold"
+                                    style="background: linear-gradient(135deg, #2d5a3b 0%, #3d6e4a 100%); color: white; min-width: 140px;">
+                                <i class="bi bi-save me-2"></i> Сохранить
+                            </button>
+                            <a href="@Url.Action("Index")" class="close-tab-on-cancel btn btn-secondary rounded-pill px-4 py-2">
+                                <i class="bi bi-arrow-left me-2"></i> Отмена
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#Phone').mask('+7 (000) 000-00-00', {
+                placeholder: '+7 (___) ___-__-__',
+                clearIfNotMatch: false
+            });
+
+            $('#Passport').mask('0000 000000', {
+                placeholder: '____ ______',
+                clearIfNotMatch: false
+            });
+        });
+    </script>
+}

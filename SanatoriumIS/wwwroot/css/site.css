@@ -1,0 +1,561 @@
+body {
+    background-color: #edf4ef;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #2f3e2f;
+    margin: 0;
+    padding: 0;
+}
+
+/* ===== NAVBAR ===== */
+
+.navbar {
+    background-color: #4f7c5a !important;
+    padding: 14px 24px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.navbar-brand {
+    color: white !important;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.nav-link {
+    color: #e6f2e8 !important;
+    margin-right: 15px;
+    transition: 0.3s;
+    font-size: 15px;
+}
+
+    .nav-link:hover {
+        color: white !important;
+    }
+
+/* ===== MAIN ===== */
+
+.container {
+    margin-top: 35px;
+}
+
+h1 {
+    color: #355c43;
+    font-weight: 700;
+    margin-bottom: 25px;
+}
+
+/* ===== TABLES ===== */
+
+table {
+    background-color: white;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 5px 18px rgba(0,0,0,0.05);
+}
+
+thead {
+    background-color: #dbe9dd;
+}
+
+/* ===== ГЛОБАЛЬНЫЕ КНОПКИ ДЛЯ ВСЕХ ВКЛАДОК ===== */
+
+/* Кнопка Создать / Сохранить */
+.btn-create, .btn-save {
+    background-color: #5d9b6b;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 20px;
+    transition: all 0.2s;
+    display: inline-block;
+    text-decoration: none;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+    .btn-create:hover, .btn-save:hover {
+        background-color: #4a7a55;
+        color: white;
+        transform: translateY(-1px);
+        text-decoration: none;
+    }
+
+/* Кнопка Редактировать */
+.btn-edit {
+    background-color: #6fa77a;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 5px 15px;
+    margin-right: 5px;
+    transition: all 0.2s;
+    display: inline-block;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+    .btn-edit:hover {
+        background-color: #5d9b6b;
+        color: white;
+        transform: translateY(-1px);
+        text-decoration: none;
+    }
+
+/* Кнопка Детали */
+.btn-details {
+    background-color: #258540;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 5px 15px;
+    margin-right: 5px;
+    transition: all 0.2s;
+    display: inline-block;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+    .btn-details:hover {
+        background-color: #6a9b78;
+        color: white;
+        transform: translateY(-1px);
+        text-decoration: none;
+    }
+
+.btn-green {
+    background-color: #4f7c5a;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 20px;
+    transition: all 0.2s;
+    display: inline-block;
+    text-decoration: none;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+    .btn-green:hover {
+        background-color: #3d6246;
+        color: white;
+        transform: translateY(-1px);
+        text-decoration: none;
+    }
+
+/* Кнопка Удалить */
+.btn-delete {
+    background-color: #c43333;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 5px 15px;
+    transition: all 0.2s;
+    display: inline-block;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+    .btn-delete:hover {
+        background-color: #d1a098;
+        color: white;
+        transform: translateY(-1px);
+        text-decoration: none;
+    }
+
+/* Кнопка Назад */
+/* Кнопка Назад */
+.btn-back {
+    background-color: #c5d4ca;
+    color: #3d5a45;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 20px;
+    transition: all 0.2s;
+    display: inline-block;
+    text-decoration: none;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+    .btn-back:hover {
+        background-color: #b0c4b8;
+        color: #2f4f3a;
+        transform: translateY(-1px);
+        text-decoration: none;
+    }
+
+/* Маленькие кнопки для таблиц */
+.btn-sm {
+    padding: 5px 12px;
+    font-size: 13px;
+}
+
+/* ===== СТАНДАРТНЫЕ КНОПКИ BOOTSTRAP (ПЕРЕОПРЕДЕЛЕНИЕ) ===== */
+
+.btn-primary {
+    background-color: #5f8c69 !important;
+    border: none !important;
+    border-radius: 10px;
+    padding: 8px 18px;
+}
+
+    .btn-primary:hover {
+        background-color: #4f7557 !important;
+        transform: translateY(-1px);
+    }
+
+.btn-secondary {
+    background-color: #c5d4ca !important;
+    border: none !important;
+    border-radius: 10px;
+    color: #3d5a45 !important;
+}
+
+    .btn-secondary:hover {
+        background-color: #b0c4b8 !important;
+        transform: translateY(-1px);
+    }
+
+.btn-info {
+    background-color: #7dab8a !important;
+    border: none !important;
+    color: white !important;
+}
+
+    .btn-info:hover {
+        background-color: #6a9b78 !important;
+        transform: translateY(-1px);
+    }
+
+.btn-danger {
+    background-color: #dcb5ad !important;
+    border: none !important;
+}
+
+    .btn-danger:hover {
+        background-color: #d1a098 !important;
+        transform: translateY(-1px);
+    }
+
+/* ===== CARDS ===== */
+
+.card {
+    background-color: white;
+    border: none;
+    border-radius: 22px;
+    padding: 22px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+}
+
+/* ===== INPUTS ===== */
+
+.form-control {
+    border-radius: 12px;
+    border: 1px solid #c7d7c9;
+    padding: 10px;
+}
+
+/* ===== FOOTER ===== */
+
+footer {
+    margin-top: 50px;
+    padding: 20px;
+    text-align: center;
+    color: #6c7d70;
+}
+
+/* ========================================= */
+/* =============== DASHBOARD =============== */
+/* ========================================= */
+
+.dashboard-wrapper {
+    padding: 20px;
+}
+
+/* ===== HEADER ===== */
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 35px;
+}
+
+.dashboard-title {
+    font-size: 52px;
+    font-weight: 700;
+    color: #355c43;
+    margin-bottom: 8px;
+}
+
+.dashboard-subtitle {
+    color: #6f8575;
+    font-size: 18px;
+}
+
+/* ===== DATE ===== */
+
+.date-picker {
+    border-radius: 14px !important;
+    border: none !important;
+    padding: 12px 16px !important;
+    background: white !important;
+    width: 260px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+/* ===== STATS ===== */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+    margin-bottom: 40px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    transition: 0.2s;
+}
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+    }
+
+.stat-title {
+    color: #7d9182;
+    font-size: 15px;
+    margin-bottom: 12px;
+}
+
+.stat-value {
+    font-size: 46px;
+    font-weight: 700;
+    color: #355c43;
+}
+
+/* ===== TIMELINE ===== */
+
+.timeline-box {
+    background: white;
+    border-radius: 28px;
+    padding: 35px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    overflow-x: auto;
+}
+
+.timeline-title {
+    font-size: 30px;
+    font-weight: 700;
+    color: #355c43;
+    margin-bottom: 35px;
+}
+
+/* ===== HOURS ===== */
+
+.timeline-hours {
+    display: flex;
+    margin-bottom: 15px;
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 10;
+    border-bottom: 2px solid #d9e5dc;
+    padding-bottom: 10px;
+}
+
+.timeline-hour-empty {
+    width: 180px;
+    flex-shrink: 0;
+}
+
+.timeline-hour {
+    flex: 1;
+    text-align: center;
+    color: #7d9182;
+    font-size: 13px;
+    font-weight: 600;
+    position: relative;
+}
+
+    /* Вертикальные линии для часов */
+    .timeline-hour::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 1px;
+        background: #d9e5dc;
+    }
+
+/* ===== ROW ===== */
+
+.timeline-row {
+    display: flex;
+    margin-bottom: 22px;
+    align-items: stretch;
+    position: relative;
+}
+
+.room-label {
+    width: 180px;
+    flex-shrink: 0;
+    font-weight: 700;
+    color: #355c43;
+    font-size: 15px;
+    padding-top: 25px;
+}
+
+/* ===== LINE ===== */
+
+.timeline-line {
+    flex: 1;
+    position: relative;
+    min-height: 78px;
+    background: linear-gradient(to right, #edf4ef, #edf4ef);
+    border-radius: 20px;
+    position: relative;
+}
+
+    /* Сетка часов на фоне */
+    .timeline-line::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: repeating-linear-gradient(to right, transparent, transparent calc(100% / 12 - 2px), #d9e5dc calc(100% / 12 - 1px), #d9e5dc calc(100% / 12));
+        pointer-events: none;
+        border-radius: 20px;
+    }
+
+/* ===== EVENT ===== */
+
+.timeline-event {
+    position: absolute;
+    top: 12px;
+    height: 54px;
+    border-radius: 16px;
+    padding: 8px 14px;
+    color: white;
+    background: linear-gradient(135deg, #5b8a72, #7ea58d);
+    box-shadow: 0 6px 16px rgba(91,138,114,0.35);
+    overflow: hidden;
+    transition: 0.2s;
+    cursor: pointer;
+    min-width: 100px;
+    z-index: 2;
+}
+
+    .timeline-event:hover {
+        transform: scale(1.02);
+        box-shadow: 0 8px 20px rgba(91,138,114,0.5);
+    }
+
+.event-title {
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.event-client {
+    font-size: 11px;
+    opacity: 0.92;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.event-time {
+    font-size: 11px;
+    opacity: 0.85;
+    white-space: nowrap;
+}
+
+/* ===== EMPTY ===== */
+
+.empty-timeline {
+    text-align: center;
+    padding: 60px;
+    color: #7d9182;
+    font-size: 18px;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .timeline-hour-empty,
+    .room-label {
+        width: 120px;
+    }
+
+    .timeline-event {
+        min-width: 80px;
+        padding: 4px 8px;
+    }
+
+    .event-title,
+    .event-client,
+    .event-time {
+        font-size: 9px;
+    }
+
+    .dashboard-title {
+        font-size: 32px;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+/* Маленькие кнопки для таблиц */
+.btn-sm {
+    padding: 5px 12px;
+    margin: 0 2px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-edit.btn-sm,
+.btn-details.btn-sm,
+.btn-delete.btn-sm {
+    padding: 6px 10px;
+    font-size: 14px;
+}
+
+.time-slot.lunch {
+    background: #fff3e0;
+    border: 2px solid #ff9800;
+    cursor: not-allowed;
+}
+
+    .time-slot.lunch .slot-time {
+        color: #e65100;
+        font-weight: bold;
+    }
+
+    .time-slot.lunch .slot-hint {
+        color: #ff9800;
+    }
+
+.time-slot.multi-slot {
+    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+    position: relative;
+    z-index: 2;
+}
+
+    .time-slot.multi-slot::after {
+        content: '↔️';
+        position: absolute;
+        right: 5px;
+        bottom: 5px;
+        font-size: 10px;
+        opacity: 0.5;
+    }

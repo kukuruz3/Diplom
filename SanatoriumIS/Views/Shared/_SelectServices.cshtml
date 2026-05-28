@@ -1,0 +1,29 @@
+﻿@model int[]
+
+<div class="mb-4">
+    <label class="form-label fw-semibold mb-2">
+        <i class="bi bi-grid-3x3-gap-fill me-1 text-success"></i> Дополнительные услуги
+    </label>
+    <div class="row g-3">
+        @if (ViewBag.Services != null)
+        {
+            var selectedServices = ViewBag.SelectedServices as int[] ?? new int[0];
+            foreach (var service in ViewBag.Services)
+            {
+                var isChecked = selectedServices.Any(s => s == service.Id);
+                <div class="col-md-6">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="selectedServices" value="@service.Id" id="service_@service.Id" @(isChecked ? "checked" : "") />
+                        <label class="form-check-label fw-semibold" for="service_@service.Id">
+                            @service.Name
+                            <span class="text-success ms-2">@service.Price.ToString("N0") ₽</span>
+                        </label>
+                        <br />
+                        <small class="text-muted">Действует на весь период проживания</small>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+    <small class="text-muted mt-2 d-block">Выберите дополнительные услуги, которые будут доступны клиентам на всё время проживания</small>
+</div>

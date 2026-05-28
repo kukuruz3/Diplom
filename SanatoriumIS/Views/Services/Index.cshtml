@@ -1,0 +1,106 @@
+﻿@model IEnumerable<SanatoriumIS.Models.Service>
+
+@{
+    ViewData["Title"] = "Услуги";
+}
+
+<div class="container-fluid px-4 mt-4">
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="px-4 py-3" style="background: linear-gradient(145deg, #2d5a3b 0%, #3d6e4a 100%);">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="text-white mb-0 fw-bold">
+                        <i class="bi bi-grid-3x3-gap-fill me-2"></i> Дополнительные услуги
+                    </h2>
+                    <p class="text-white-50 mb-0 mt-1">Управление дополнительными услугами санатория</p>
+                </div>
+                <a asp-action="Create" class="btn btn-light rounded-pill px-4 py-2 fw-semibold shadow-sm" style="color: #2d5a3b;">
+                    <i class="bi bi-plus-circle me-2"></i> Добавить услугу
+                </a>
+            </div>
+        </div>
+
+        <div class="p-0">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead style="background-color: #f8f9fc; border-bottom: 2px solid #e9ecef;">
+                            <tr>
+                                <th class="ps-4 py-3 fw-semibold" style="color: #2d5a3b;">Название услуги</th>
+                                <th class="py-3 fw-semibold" style="color: #2d5a3b;">Стоимость</th>
+                                <th class="pe-4 py-3 text-center fw-semibold" style="color: #2d5a3b; width: 280px;">Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4 py-3 fw-medium">
+                                        <i class="bi bi-tag text-success me-2"></i> @item.Name
+                                    </td>
+                                    <td class="py-3">
+                                        <span class="fw-bold text-success fs-5">
+                                            <i class="bi bi-currency-ruble me-1"></i> @item.Price.ToString("N0") ₽
+                                        </span>
+                                    </td>
+                                    <td class="pe-4 py-3 text-center">
+                                        <div class="d-flex gap-2 justify-content-center">
+                                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm px-3 py-1.5 rounded-pill shadow-sm"
+                                               style="background: linear-gradient(135deg, #4a9e6b 0%, #3d8a5c 100%); color: white; border: none;">
+                                                <i class="bi bi-pencil me-1"></i> Изменить
+                                            </a>
+                                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm px-3 py-1.5 rounded-pill shadow-sm"
+                                               style="background: linear-gradient(135deg, #7cb19d 0%, #6b9e8a 100%); color: white; border: none;">
+                                                <i class="bi bi-eye me-1"></i> Детали
+                                            </a>
+                                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm px-3 py-1.5 rounded-pill shadow-sm"
+                                               style="background: linear-gradient(135deg, #c43333 0%, #a33333 100%); color: white; border: none;">
+                                                <i class="bi bi-trash me-1"></i> Удалить
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5 my-5">
+                    <div class="display-1 text-muted">
+                        <i class="bi bi-grid-3x3-gap-fill"></i>
+                    </div>
+                    <h3 class="text-muted mt-3">Нет дополнительных услуг</h3>
+                    <p class="text-muted mb-4">Добавьте первую услугу в систему</p>
+                    <a asp-action="Create" class="btn rounded-pill px-4 py-2 shadow-sm" style="background: linear-gradient(135deg, #2d5a3b 0%, #3d6e4a 100%); color: white;">
+                        <i class="bi bi-plus-circle me-2"></i> Добавить услугу
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .table tbody tr {
+        border-bottom: 1px solid #f0f2f5;
+        transition: all 0.2s;
+    }
+
+        .table tbody tr:hover {
+            background-color: #f8f9fc;
+        }
+
+    .btn-sm {
+        transition: all 0.2s ease;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+        .btn-sm:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.05);
+        }
+</style>

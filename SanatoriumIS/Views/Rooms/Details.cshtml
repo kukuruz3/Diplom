@@ -1,0 +1,74 @@
+﻿@model SanatoriumIS.Models.Room
+
+@{
+    ViewData["Title"] = "Детали номера";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="px-4 py-3" style="background: linear-gradient(145deg, #7cb19d 0%, #6b9e8a 100%);">
+                    <h3 class="text-white mb-0 fw-bold">
+                        <i class="bi bi-info-circle me-2"></i> Детали номера
+                    </h3>
+                    <p class="text-white-50 mb-0 mt-1">Информация о гостиничном номере</p>
+                </div>
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-building" style="font-size: 64px; color: #4a7c5e;"></i>
+                    </div>
+
+                    <dl class="row">
+                        <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                            <i class="bi bi-hash me-2 text-success"></i> Номер комнаты
+                        </dt>
+                        <dd class="col-sm-8 p-3 mb-2">№ @Model.Number</dd>
+
+                        <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                            <i class="bi bi-people me-2 text-primary"></i> Вместимость
+                        </dt>
+                        <dd class="col-sm-8 p-3 mb-2">@Model.Capacity человек</dd>
+
+                        <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                            <i class="bi bi-star me-2 text-warning"></i> Категория
+                        </dt>
+                        <dd class="col-sm-8 p-3 mb-2">
+                            <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill fs-6">
+                                @Model.Category
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                            <i class="bi bi-info-circle me-2 text-info"></i> Статус
+                        </dt>
+                        <dd class="col-sm-8 p-3 mb-2">
+                            @if (Model.IsOccupied)
+                            {
+                                <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill">
+                                    <i class="bi bi-person-fill me-1"></i> Занят
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">
+                                    <i class="bi bi-check-circle me-1"></i> Свободен
+                                </span>
+                            }
+                        </dd>
+                    </dl>
+
+                    <div class="d-flex justify-content-center gap-3 mt-4 pt-3" style="border-top: 1px solid #d9e5dc;">
+                        <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn px-4 py-2 rounded-pill shadow-sm fw-semibold"
+                           style="background: linear-gradient(135deg, #4a9e6b 0%, #3d8a5c 100%); color: white;">
+                            <i class="bi bi-pencil me-2"></i> Редактировать
+                        </a>
+                        <a href="@Url.Action("Index")" class="close-tab-on-cancel btn btn-outline-secondary rounded-pill px-4 py-2">
+                            <i class="bi bi-arrow-left me-2"></i> Назад к списку
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

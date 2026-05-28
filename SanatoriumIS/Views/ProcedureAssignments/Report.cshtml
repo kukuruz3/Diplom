@@ -1,0 +1,300 @@
+﻿@model SanatoriumIS.ViewModels.ProcedureReportViewModel
+
+@{
+    ViewData["Title"] = "Отчет по процедурам";
+}
+
+<div class="container-fluid px-4 mt-4">
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+        <!-- Заголовок -->
+        <div class="px-4 py-3" style="background: linear-gradient(145deg, #2d5a3b 0%, #3d6e4a 100%);">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <h2 class="text-white mb-0 fw-bold">
+                        <i class="bi bi-file-text-fill me-2"></i> Отчет по процедурам
+                    </h2>
+                    <p class="text-white-50 mb-0 mt-1">
+                        Детальный отчет о назначенных процедурах
+                    </p>
+                </div>
+                <button onclick="window.print()" class="btn btn-light rounded-pill px-4 shadow-sm no-print">
+                    <i class="bi bi-printer me-2"></i> Печать
+                </button>
+            </div>
+        </div>
+        <div class="card-body p-4">
+            <!-- Форма фильтрации -->
+            <form method="get" action="/ProcedureAssignments/Report" class="row g-3 mb-4 no-print" id="filterSection">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold text-dark">
+                        <i class="bi bi-calendar3 me-2 text-success"></i> Дата
+                    </label>
+                    <input type="date" name="date" class="form-control form-control-lg rounded-3 shadow-sm border-0 bg-light"
+                           value="@Model.SelectedDate.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold text-dark">
+                        <i class="bi bi-person me-2 text-success"></i> Клиент
+                    </label>
+                    <select name="clientId" class="form-select form-select-lg rounded-3 shadow-sm border-0 bg-light">
+                        <option value="">-- Все клиенты --</option>
+                        @foreach (var client in Model.Clients)
+                        {
+                            <option value="@client.Id" selected="@(Model.SelectedClientId == client.Id)">
+                                @client.FullName
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-lg rounded-pill w-100 shadow-sm fw-semibold"
+                            style="background: linear-gradient(135deg, #2d5a3b 0%, #3d6e4a 100%); color: white;">
+                        <i class="bi bi-arrow-repeat me-2"></i> Показать отчет
+                    </button>
+                </div>
+            </form>
+
+            <!-- Статистика -->
+            <div class="row g-4 mb-4 no-print" id="statsSection">
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card text-center p-3 rounded-4">
+                        <div class="stat-icon mb-2">
+                            <i class="bi bi-calendar-check fs-1 text-success"></i>
+                        </div>
+                        <div class="stat-value display-6 fw-bold text-success">@Model.ReportItems.Count</div>
+                        <div class="stat-label text-muted">Всего процедур</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card text-center p-3 rounded-4">
+                        <div class="stat-icon mb-2">
+                            <i class="bi bi-people fs-1 text-primary"></i>
+                        </div>
+                        <div class="stat-value display-6 fw-bold text-primary">@Model.ReportItems.Select(r => r.ClientName).Distinct().Count()</div>
+                        <div class="stat-label text-muted">Клиентов</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card text-center p-3 rounded-4">
+                        <div class="stat-icon mb-2">
+                            <i class="bi bi-building fs-1 text-info"></i>
+                        </div>
+                        <div class="stat-value display-6 fw-bold text-info">@Model.ReportItems.Select(r => r.RoomName).Distinct().Count()</div>
+                        <div class="stat-label text-muted">Кабинетов</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card text-center p-3 rounded-4">
+                        <div class="stat-icon mb-2">
+                            <i class="bi bi-person-badge fs-1 text-warning"></i>
+                        </div>
+                        <div class="stat-value display-6 fw-bold text-warning">@Model.ReportItems.Select(r => r.EmployeeName).Distinct().Count()</div>
+                        <div class="stat-label text-muted">Сотрудников</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Таблица отчета -->
+            @if (Model.ReportItems.Any())
+            {
+                <div class="table-responsive" style="overflow-x: auto;">
+                    <table class="table table-hover align-middle" id="reportTable" style="min-width: 800px;">
+                        <thead style="background-color: #f8f9fc; border-bottom: 2px solid #e9ecef;">
+                            <tr>
+                                <th class="ps-4 py-3 fw-semibold" style="color: #2d5a3b; width: 50px;">№</th>
+                                <th class="py-3 fw-semibold" style="color: #2d5a3b; width: 200px;">Клиент</th>
+                                <th class="py-3 fw-semibold" style="color: #2d5a3b; width: 150px;">Процедура</th>
+                                <th class="py-3 fw-semibold" style="color: #2d5a3b; width: 150px;">Кабинет</th>
+                                <th class="py-3 fw-semibold" style="color: #2d5a3b; width: 180px;">Сотрудник</th>
+                                <th class="py-3 fw-semibold" style="color: #2d5a3b; width: 100px;">Время</th>
+                                <th class="py-3 fw-semibold" style="color: #2d5a3b; width: 100px;">Длительность</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                int counter = 1;
+                                var groupedByClient = Model.ReportItems.GroupBy(r => r.ClientName);
+                            }
+                            @foreach (var clientGroup in groupedByClient)
+                            {
+                                int clientRowCount = clientGroup.Count();
+                                int rowIndex = 0;
+                                @foreach (var item in clientGroup)
+                                {
+                                    <tr style="border-bottom: 1px solid #f0f2f5;">
+                                        @if (rowIndex == 0)
+                                        {
+                                            <td class="ps-4 py-3 fw-medium text-success" rowspan="@clientRowCount" style="vertical-align: middle; background-color: white;">
+                                                <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">@counter</span>
+                                            </td>
+                                            <td class="py-3 fw-medium" rowspan="@clientRowCount" style="vertical-align: middle; background-color: white;">
+                                                <i class="bi bi-person-circle text-success me-2"></i>
+                                                <strong>@item.ClientName</strong>
+                                            </td>
+                                        }
+                                        <td class="py-3">
+                                            <i class="bi bi-heart-pulse text-danger me-2"></i>
+                                            @item.ProcedureName
+                                        </td>
+                                        <td class="py-3">
+                                            <i class="bi bi-building text-primary me-2"></i>
+                                            @item.RoomName
+                                        </td>
+                                        <td class="py-3">
+                                            <i class="bi bi-person-badge text-info me-2"></i>
+                                            @item.EmployeeName
+                                        </td>
+                                        <td class="py-3">
+                                            <i class="bi bi-clock me-2 text-secondary"></i>
+                                            @item.Duration
+                                        </td>
+                                        <td class="py-3">
+                                            <span class="badge bg-light text-dark px-3 py-2 rounded-pill">
+                                                <i class="bi bi-hourglass-split me-1"></i> @item.DurationMinutes
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    rowIndex++;
+                                }
+                                counter++;
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5 my-5 no-print">
+                    <div class="display-1 text-muted">
+                        <i class="bi bi-calendar-x"></i>
+                    </div>
+                    <h3 class="text-muted mt-3">Нет назначенных процедур</h3>
+                    <p class="text-muted mb-4">На выбранную дату нет назначенных процедур</p>
+                    <a asp-controller="ProcedureAssignments" asp-action="Index" class="btn rounded-pill px-4 py-2 shadow-sm"
+                       style="background: linear-gradient(135deg, #2d5a3b 0%, #3d6e4a 100%); color: white;">
+                        <i class="bi bi-calendar-week me-2"></i> Перейти к календарю
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .stat-card {
+        background: white;
+        transition: all 0.3s ease;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+
+    /* Стили для печати */
+    @@media print {
+        /* Скрываем всё, что не нужно при печати */
+        .no-print {
+            display: none !important;
+        }
+        
+        /* Скрываем все ссылки и их URL */
+        a, 
+        a[href],
+        a[href]:after {
+            display: none !important;
+            content: none !important;
+            text-decoration: none !important;
+        }
+        
+        /* Убираем любые псевдоэлементы у ссылок */
+        *:after,
+        *:before {
+            display: none !important;
+            content: none !important;
+        }
+        
+        body {
+            background: white;
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        
+        .card {
+            box-shadow: none !important;
+            border: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+        }
+        
+        .card-body {
+            padding: 0 !important;
+        }
+        
+        .container-fluid {
+            padding: 0 !important;
+            margin: 0 !important;
+            width: 100% !important;
+        }
+        
+        .table-responsive {
+            overflow: visible !important;
+            width: 100% !important;
+        }
+        
+        .table {
+            width: 100% !important;
+            font-size: 9pt !important;
+            border-collapse: collapse !important;
+            table-layout: fixed !important;
+        }
+        
+        .table th, 
+        .table td {
+            border: 1px solid #ddd !important;
+            padding: 4px !important;
+            word-wrap: break-word !important;
+        }
+        
+        .badge {
+            border: none !important;
+            background: transparent !important;
+            color: black !important;
+            padding: 0 !important;
+        }
+        
+        .bi {
+            display: none !important;
+        }
+        
+        @@page {
+            size: landscape;
+            margin: 0.5cm;
+        }
+        
+        h2, h3 {
+            margin-top: 0 !important;
+        }
+        
+        #filterSection {
+            display: none !important;
+        }
+        
+        #statsSection {
+            display: none !important;
+        }
+    }
+</style>
+
+<script>
+    $(document).ready(function() {
+        $('#reportDate, #clientFilter').on('change', function() {
+            $(this).closest('form').submit();
+        });
+    });
+</script>

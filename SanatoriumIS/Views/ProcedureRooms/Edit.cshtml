@@ -1,0 +1,93 @@
+﻿@model SanatoriumIS.Models.ProcedureRoom
+
+@{
+    ViewData["Title"] = "Редактирование кабинета";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="px-4 py-3" style="background: linear-gradient(145deg, #4a7c5e 0%, #5a8c6e 100%);">
+                    <h3 class="text-white mb-0 fw-bold">
+                        <i class="bi bi-pencil-square me-2"></i> Редактирование кабинета
+                    </h3>
+                    <p class="text-white-50 mb-0 mt-1">Измените информацию о процедурном кабинете</p>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Edit">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3"></div>
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label asp-for="RoomNumber" class="form-label fw-semibold mb-2">
+                                    <i class="bi bi-hash me-1 text-success"></i> Номер кабинета <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="RoomNumber" class="form-control form-control-lg rounded-3"
+                                       style="background-color: #f8f9fc;" />
+                                <span asp-validation-for="RoomNumber" class="text-danger small mt-1"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-4">
+                                <label asp-for="Name" class="form-label fw-semibold mb-2">
+                                    <i class="bi bi-tag me-1 text-success"></i> Название кабинета <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="Name" class="form-control form-control-lg rounded-3"
+                                       style="background-color: #f8f9fc;" />
+                                <span asp-validation-for="Name" class="text-danger small mt-1"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label asp-for="RoomType" class="form-label fw-semibold mb-2">
+                                    <i class="bi bi-building me-1 text-success"></i> Тип кабинета
+                                </label>
+                                <select asp-for="RoomType" class="form-select form-select-lg rounded-3" style="background-color: #f8f9fc;">
+                                    <option value="">-- Выберите тип кабинета --</option>
+                                    <option value="Массажный">Массажный</option>
+                                    <option value="Физиотерапевтический">Физиотерапевтический</option>
+                                    <option value="ЛФК">ЛФК</option>
+                                    <option value="Гидротерапия">Гидротерапия</option>
+                                    <option value="Психотерапия">Психотерапия</option>
+                                    <option value="Диагностический">Диагностический</option>
+                                    <option value="Лечебный">Лечебный</option>
+                                    <option value="Стоматологический">Стоматологический</option>
+                                    <option value="Универсальный">Универсальный</option>
+                                </select>
+                                <span asp-validation-for="RoomType" class="text-danger small mt-1"></span>
+                                <small class="text-muted">Определяет, какие процедуры можно проводить в этом кабинете</small>
+                            </div>
+
+                            <div class="col-md-6 mb-4">
+                                <label asp-for="Description" class="form-label fw-semibold mb-2">
+                                    <i class="bi bi-chat-text me-1 text-success"></i> Описание
+                                </label>
+                                <textarea asp-for="Description" class="form-control form-control-lg rounded-3"
+                                          rows="2" style="background-color: #f8f9fc;" placeholder="Дополнительная информация о кабинете"></textarea>
+                                <span asp-validation-for="Description" class="text-danger small mt-1"></span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-3 mt-4 pt-3">
+                            <button type="submit" class="btn px-4 py-2 rounded-pill shadow-sm fw-semibold"
+                                    style="background: linear-gradient(135deg, #4a7c5e 0%, #5a8c6e 100%); color: white; min-width: 140px;">
+                                <i class="bi bi-save me-2"></i> Сохранить
+                            </button>
+                            <a href="@Url.Action("Index")" class="close-tab-on-cancel btn btn-secondary rounded-pill px-4 py-2">
+                                <i class="bi bi-arrow-left me-2"></i> Отмена
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

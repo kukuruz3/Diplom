@@ -1,0 +1,544 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Санаторий</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <!-- Site CSS -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="no-print">
+        <nav class="navbar navbar-expand-lg">
+            <div class="container-fluid">
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-tree-fill me-2"></i> Санаторий "Нижне-Ивкино"
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <div class="navbar-nav ms-auto">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <!-- Главная - все видят -->
+                            <a class="nav-link text-white" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-house-door me-1"></i> Главная
+                            </a>
+
+                            <!-- Назначение процедур - только Admin и ReferringDoctor -->
+                            @if (User.IsInRole("Admin") || User.IsInRole("ReferringDoctor"))
+                            {
+                                <a class="nav-link text-white" asp-controller="ProcedureAssignments" asp-action="Index">
+                                    <i class="bi bi-calendar-week me-1"></i> Назначение процедур
+                                </a>
+                            }
+
+                            <!-- График сотрудников - все медицинские сотрудники -->
+                            <a class="nav-link text-white" asp-controller="Employees" asp-action="Schedule">
+                                <i class="bi bi-person-workspace me-1"></i> График сотрудников
+                            </a>
+
+                            <!-- Отчёты - Admin, Receptionist, ReferringDoctor -->
+                            @if (User.IsInRole("Admin") || User.IsInRole("Receptionist") || User.IsInRole("ReferringDoctor"))
+                            {
+                                <div class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
+                                        <i class="bi bi-file-text-fill me-1"></i> Отчеты
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="ProcedureAssignments" asp-action="Report">
+                                                <i class="bi bi-clipboard2-pulse me-2"></i> Отчет по процедурам
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Rooms" asp-action="OccupancyReport">
+                                                <i class="bi bi-door-closed me-2"></i> Занятость номеров
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            }
+
+                            <!-- Модули (CRUD) - только Admin -->
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <div class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
+                                        <i class="bi bi-grid-3x3-gap-fill me-1"></i> Модули
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" asp-controller="Clients" asp-action="Index"><i class="bi bi-people me-2"></i> Клиенты</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Rooms" asp-action="Index"><i class="bi bi-door-closed me-2"></i> Номера</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Bookings" asp-action="Index"><i class="bi bi-calendar-check me-2"></i> Бронирования</a></li>
+                                        <li><a class="dropdown-item" asp-controller="RoomPrices" asp-action="Index"><i class="bi bi-cash-stack me-2"></i> Цены на номера</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" asp-controller="Procedures" asp-action="Index"><i class="bi bi-heart-pulse me-2"></i> Процедуры</a></li>
+                                        <li><a class="dropdown-item" asp-controller="ProcedureRooms" asp-action="Index"><i class="bi bi-building me-2"></i> Кабинеты</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Employees" asp-action="Index"><i class="bi bi-people-fill me-2"></i> Сотрудники</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" asp-controller="Services" asp-action="Index"><i class="bi bi-grid-3x3-gap-fill me-2"></i> Услуги</a></li>
+                                    </ul>
+                                </div>
+                            }
+
+                            <!-- Информация о пользователе и выход -->
+                            <div class="nav-item dropdown ms-2">
+                                <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-person-circle me-1"></i> @User.Identity.Name
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <span class="dropdown-item-text small text-muted">
+                                            <i class="bi bi-shield-check me-1"></i>
+                                            @string.Join(", ", User.Claims.Where(c => c.Type == System.Security.Claims.ClaimTypes.Role).Select(c => c.Value))
+                                        </span>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form method="post" asp-controller="Account" asp-action="Logout" id="logoutForm">
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="bi bi-box-arrow-right me-2"></i> Выйти
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        }
+                        else
+                        {
+                            <!-- Неавторизованным ничего не показываем -->
+                        }
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Вкладки (только для авторизованных) -->
+        @if (User.Identity.IsAuthenticated)
+        {
+            <div id="tabsContainer" class="tabs-container">
+                <div class="tabs-header" id="tabsHeader"></div>
+            </div>
+        }
+    </div>
+
+    <div class="container-fluid mt-3">
+        <main role="main">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top mt-4 py-3 text-center text-muted small no-print">
+        <i class="bi bi-tree"></i> Санаторий "Нижне-Ивкино" &copy; @DateTime.Now.Year
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+        .tabs-container {
+        background: #f8f9fc;
+        border-bottom: 1px solid #e9ecef;
+        padding: 8px 16px 0 16px;
+        min-height: 45px;
+        }
+
+        .tabs-header {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        align-items: center;
+        }
+
+        .tab-item {
+        display: inline-flex;
+        align-items: center;
+        background: white;
+        border: 1px solid #e9ecef;
+        border-bottom: none;
+        border-radius: 8px 8px 0 0;
+        padding: 6px 12px;
+        gap: 6px;
+        font-size: 13px;
+        }
+
+        .tab-item.active {
+        background: white;
+        border-bottom: 2px solid #2d5a3b;
+        color: #2d5a3b;
+        }
+
+        .tab-item.active a {
+        color: #2d5a3b;
+        font-weight: 500;
+        }
+
+        .tab-link {
+        text-decoration: none;
+        color: #555;
+        }
+
+        .tab-close {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #999;
+        font-size: 14px;
+        padding: 0 4px;
+        }
+
+        .tab-close:hover {
+        color: #c43333;
+        }
+
+        @@media print {
+        .no-print {
+        display: none !important;
+        }
+
+        a[href]:after {
+        content: none !important;
+        display: none !important;
+        }
+
+        a {
+        text-decoration: none !important;
+        color: black !important;
+        }
+
+        body {
+        background: white;
+        padding: 0 !important;
+        margin: 0 !important;
+        }
+
+        .container-fluid {
+        padding: 0 !important;
+        margin: 0 !important;
+        }
+
+        .card {
+        box-shadow: none !important;
+        border: none !important;
+        }
+        }
+    </style>
+
+    @if (User.Identity.IsAuthenticated)
+    {
+        <script>
+            const TABS_STORAGE_KEY = 'sanatorium_tabs_session';
+
+            // Очистка вкладок при смене пользователя
+            const lastUserKey = 'sanatorium_last_user';
+            const currentUser = '@User.Identity.Name';
+
+            if (currentUser && sessionStorage.getItem(lastUserKey) !== currentUser) {
+            sessionStorage.removeItem(TABS_STORAGE_KEY);
+            sessionStorage.setItem(lastUserKey, currentUser);
+            }
+
+            let currentUrl = window.location.pathname;
+            if (currentUrl.endsWith('/') && currentUrl !== '/') {
+            currentUrl = currentUrl.slice(0, -1);
+            }
+            if (currentUrl === '' || currentUrl === '/') {
+            currentUrl = '/Home/Index';
+            }
+
+            const currentController = currentUrl.split('/')[1] || 'Home';
+            let currentAction = currentUrl.split('/')[2] || 'Index';
+            let currentId = currentUrl.split('/')[3] || null;
+
+            if (currentController === 'Home' && (currentAction === '' || currentAction === 'Home')) {
+            currentAction = 'Index';
+            currentUrl = '/Home/Index';
+            }
+
+            function getPageTitle(controller, action, id = null) {
+            const titles = {
+            'Home/Index': 'Главная',
+            'Clients/Index': 'Клиенты',
+            'Clients/Create': 'Добавление клиента',
+            'Clients/Edit': id ? `Редактирование клиента` : 'Редактирование клиента',
+            'Clients/Details': id ? `Клиент` : 'Информация о клиенте',
+            'Clients/Delete': id ? `Удаление клиента` : 'Удаление клиента',
+            'Rooms/Index': 'Номера',
+            'Rooms/Create': 'Добавление номера',
+            'Rooms/Edit': id ? `Редактирование номера` : 'Редактирование номера',
+            'Rooms/Details': id ? `Номер` : 'Информация о номере',
+            'Rooms/Delete': id ? `Удаление номера` : 'Удаление номера',
+            'Rooms/OccupancyReport': 'Отчет по занятости номеров',
+            'Bookings/Index': 'Бронирования',
+            'Bookings/Create': 'Новое бронирование',
+            'Bookings/Edit': id ? `Редактирование бронирования` : 'Редактирование бронирования',
+            'Bookings/Details': id ? `Бронирование` : 'Информация о бронировании',
+            'Bookings/Delete': id ? `Удаление бронирования` : 'Удаление бронирования',
+            'Procedures/Index': 'Процедуры',
+            'Procedures/Create': 'Добавление процедуры',
+            'Procedures/Edit': id ? `Редактирование процедуры` : 'Редактирование процедуры',
+            'Procedures/Details': id ? `Процедура` : 'Информация о процедуре',
+            'Procedures/Delete': id ? `Удаление процедуры` : 'Удаление процедуры',
+            'ProcedureRooms/Index': 'Процедурные кабинеты',
+            'ProcedureRooms/Create': 'Добавление кабинета',
+            'ProcedureRooms/Edit': id ? `Редактирование кабинета` : 'Редактирование кабинета',
+            'ProcedureRooms/Details': id ? `Кабинет` : 'Информация о кабинете',
+            'ProcedureRooms/Delete': id ? `Удаление кабинета` : 'Удаление кабинета',
+            'Employees/Index': 'Сотрудники',
+            'Employees/Create': 'Добавление сотрудника',
+            'Employees/Edit': id ? `Редактирование сотрудника` : 'Редактирование сотрудника',
+            'Employees/Details': id ? `Сотрудник` : 'Информация о сотруднике',
+            'Employees/Delete': id ? `Удаление сотрудника` : 'Удаление сотрудника',
+            'Employees/Schedule': 'График сотрудников',
+            'ProcedureAssignments/Index': 'Назначение процедур',
+            'ProcedureAssignments/Report': 'Отчет по процедурам',
+            'Services/Index': 'Услуги',
+            'Services/Create': 'Добавление услуги',
+            'Services/Edit': id ? `Редактирование услуги` : 'Редактирование услуги',
+            'Services/Details': id ? `Услуга` : 'Информация об услуге',
+            'Services/Delete': id ? `Удаление услуги` : 'Удаление услуги',
+            'RoomPrices/Index': 'Цены на номера',
+            'RoomPrices/Create': 'Добавление цены',
+            'RoomPrices/Edit': id ? `Редактирование цены` : 'Редактирование цены',
+            'RoomPrices/Details': id ? `Цена` : 'Информация о цене',
+            'RoomPrices/Delete': id ? `Удаление цены` : 'Удаление цены'
+            };
+
+            const key = `${controller}/${action}`;
+            let title = titles[key];
+
+            if (!title) {
+            const actionNames = {
+            'Index': 'Список',
+            'Create': 'Создание',
+            'Edit': 'Редактирование',
+            'Details': 'Просмотр',
+            'Delete': 'Удаление',
+            'Schedule': 'График',
+            'Report': 'Отчет'
+            };
+
+            const controllerNames = {
+            'Home': 'Главная',
+            'Clients': 'Клиенты',
+            'Rooms': 'Номера',
+            'Bookings': 'Бронирования',
+            'Procedures': 'Процедуры',
+            'ProcedureRooms': 'Кабинеты',
+            'Employees': 'Сотрудники',
+            'ProcedureAssignments': 'Назначения',
+            'Services': 'Услуги',
+            'RoomPrices': 'Цены'
+            };
+
+            const actionName = actionNames[action] || action;
+            const controllerName = controllerNames[controller] || controller;
+            title = `${actionName} ${controllerName}`;
+            }
+
+            if (id && (action === 'Edit' || action === 'Details' || action === 'Delete')) {
+            title = `${title} #${id}`;
+            }
+
+            return title;
+            }
+
+            function getPageIcon(controller, action) {
+            const icons = {
+            'Home': 'bi-house-door',
+            'Clients': 'bi-people',
+            'Rooms': 'bi-door-closed',
+            'Bookings': 'bi-calendar-check',
+            'Procedures': 'bi-heart-pulse',
+            'ProcedureRooms': 'bi-building',
+            'Employees': action === 'Schedule' ? 'bi-person-workspace' : 'bi-people-fill',
+            'ProcedureAssignments': action === 'Report' ? 'bi-file-text-fill' : 'bi-calendar-week',
+            'Services': 'bi-grid-3x3-gap-fill',
+            'RoomPrices': 'bi-cash-stack'
+            };
+            return icons[controller] || 'bi-folder';
+            }
+
+            const currentPageTitle = getPageTitle(currentController, currentAction, currentId);
+            const currentPageIcon = getPageIcon(currentController, currentAction);
+
+            function getTabs() {
+            const tabs = sessionStorage.getItem(TABS_STORAGE_KEY);
+            return tabs ? JSON.parse(tabs) : [];
+            }
+
+            function saveTabs(tabs) {
+            sessionStorage.setItem(TABS_STORAGE_KEY, JSON.stringify(tabs));
+            }
+
+            function normalizeUrl(url) {
+            let normalized = url;
+            if (normalized.endsWith('/') && normalized !== '/') {
+            normalized = normalized.slice(0, -1);
+            }
+            if (normalized === '' || normalized === '/') {
+            normalized = '/Home/Index';
+            }
+            return normalized;
+            }
+
+            function addCurrentTab() {
+            let tabs = getTabs();
+            const normalizedCurrentUrl = normalizeUrl(currentUrl);
+            const existingIndex = tabs.findIndex(t => normalizeUrl(t.url) === normalizedCurrentUrl);
+
+            if (existingIndex !== -1) {
+            tabs[existingIndex].lastAccess = Date.now();
+            tabs[existingIndex].title = currentPageTitle;
+            tabs[existingIndex].icon = currentPageIcon;
+            } else {
+            tabs.push({
+            id: Date.now(),
+            url: currentUrl,
+            controller: currentController,
+            action: currentAction,
+            title: currentPageTitle,
+            icon: currentPageIcon,
+            lastAccess: Date.now()
+            });
+            }
+
+            tabs.sort((a, b) => b.lastAccess - a.lastAccess);
+            const limitedTabs = tabs.slice(0, 10);
+            saveTabs(limitedTabs);
+            renderTabs();
+            }
+
+            window.closeTab = function(tabId, event) {
+            if (event) event.stopPropagation();
+            let tabs = getTabs();
+            const newTabs = tabs.filter(t => t.id != tabId);
+            saveTabs(newTabs);
+
+            const currentTab = tabs.find(t => normalizeUrl(t.url) === normalizeUrl(currentUrl));
+            if (currentTab && currentTab.id == tabId) {
+            const firstTab = newTabs[0];
+            if (firstTab) {
+            window.location.href = firstTab.url;
+            } else {
+            window.location.href = '/Home/Index';
+            }
+            } else {
+            renderTabs();
+            }
+            };
+
+            window.closeAllTabs = function() {
+            if (confirm('Закрыть все вкладки?')) {
+            sessionStorage.removeItem(TABS_STORAGE_KEY);
+            window.location.href = '/Home/Index';
+            }
+            };
+
+            window.closeOtherTabs = function(currentTabId) {
+            if (confirm('Закрыть все другие вкладки?')) {
+            let tabs = getTabs();
+            const currentTab = tabs.find(t => t.id == currentTabId);
+            if (currentTab) {
+            saveTabs([currentTab]);
+            } else {
+            sessionStorage.removeItem(TABS_STORAGE_KEY);
+            }
+            renderTabs();
+            }
+            };
+
+            function renderTabs() {
+            const tabs = getTabs();
+            const container = document.getElementById('tabsHeader');
+            if (!container) return;
+
+            if (tabs.length === 0) {
+            container.innerHTML = '';
+            return;
+            }
+
+            let html = '';
+            const normalizedCurrentUrl = normalizeUrl(currentUrl);
+
+            tabs.forEach(tab => {
+            const isActive = (normalizeUrl(tab.url) === normalizedCurrentUrl);
+            const activeClass = isActive ? 'active' : '';
+
+            html += `
+            <div class="tab-item ${activeClass}">
+            <a href="${escapeHtml(tab.url)}" class="tab-link">
+            <i class="bi ${escapeHtml(tab.icon)} me-1"></i>
+            <span>${escapeHtml(tab.title)}</span>
+            </a>
+            <button type="button" class="tab-close" onclick="closeTab(${tab.id}, event)" title="Закрыть">
+            <i class="bi bi-x"></i>
+            </button>
+            </div>
+            `;
+            });
+
+            if (tabs.length > 0) {
+            const currentTab = tabs.find(t => normalizeUrl(t.url) === normalizedCurrentUrl);
+            html += `
+            <div style="margin-left: auto; display: flex; gap: 4px;">
+            <button type="button" class="tab-close" onclick="closeOtherTabs(${currentTab?.id || 0})" title="Закрыть другие">
+            <i class="bi bi-files"></i>
+            </button>
+            <button type="button" class="tab-close" onclick="closeAllTabs()" title="Закрыть все">
+            <i class="bi bi-x-lg"></i>
+            </button>
+            </div>
+            `;
+            }
+
+            container.innerHTML = html;
+            }
+
+            function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+            }
+
+            window.closeCurrentTabAndRedirect = function(redirectUrl) {
+            let currentUrlForClose = window.location.pathname;
+            if (currentUrlForClose.endsWith('/') && currentUrlForClose !== '/') {
+            currentUrlForClose = currentUrlForClose.slice(0, -1);
+            }
+            if (currentUrlForClose === '' || currentUrlForClose === '/') {
+            currentUrlForClose = '/Home/Index';
+            };
+
+            let tabs = getTabs();
+            const normalizedCurrentUrl = normalizeUrl(currentUrlForClose);
+            const newTabs = tabs.filter(t => normalizeUrl(t.url) !== normalizedCurrentUrl);
+            saveTabs(newTabs);
+
+            window.location.href = redirectUrl;
+            };
+
+            $(document).on('click', '.close-tab-on-cancel', function(e) {
+            e.preventDefault();
+            const redirectUrl = $(this).attr('href');
+            if (redirectUrl) {
+            closeCurrentTabAndRedirect(redirectUrl);
+            }
+            });
+
+            $(document).ready(function() {
+            addCurrentTab();
+            });
+        </script>
+    }
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

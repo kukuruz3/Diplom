@@ -1,0 +1,64 @@
+@model SanatoriumIS.Models.RoomPrice
+
+@{
+    ViewData["Title"] = "Удаление цены";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="px-4 py-3" style="background: linear-gradient(145deg, #dcb5ad);">
+                    <h3 class="text-white mb-0 fw-bold">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> Удаление цены
+                    </h3>
+                    <p class="text-white-50 mb-0 mt-1">Внимание! Это действие нельзя отменить</p>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-warning rounded-3 mb-4" style="background-color: #fef5e7; border-color: #fce4b4;">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        <strong>Подтверждение удаления:</strong> Вы действительно хотите удалить эту цену?
+                    </div>
+
+                    <dl class="row">
+                        <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                            <i class="bi bi-people me-2"></i> Вместимость
+                        </dt>
+                        <dd class="col-sm-8 p-3 mb-2">@(Model.Capacity == 1 ? "Одноместный" : "Двухместный")</dd>
+
+                        <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                            <i class="bi bi-star me-2"></i> Категория
+                        </dt>
+                        <dd class="col-sm-8 p-3 mb-2">@Model.Category</dd>
+
+                        <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                            <i class="bi bi-currency-ruble me-2"></i> Цена за ночь
+                        </dt>
+                        <dd class="col-sm-8 p-3 mb-2 fw-bold">@Model.PricePerNight.ToString("N0") ₽</dd>
+
+                        @if (!string.IsNullOrEmpty(Model.Description))
+                        {
+                            <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                                <i class="bi bi-chat-text me-2"></i> Описание
+                            </dt>
+                            <dd class="col-sm-8 p-3 mb-2">@Model.Description</dd>
+                        }
+                    </dl>
+
+                    <form asp-action="Delete">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="d-flex justify-content-center gap-3 mt-4 pt-3" style="border-top: 1px solid #d9e5dc;">
+                            <button type="submit" class="btn px-4 py-2 rounded-pill shadow-sm fw-semibold"
+                                    style="background: linear-gradient(135deg, #c43333 0%, #a33333 100%); color: white;">
+                                <i class="bi bi-trash me-2"></i> Да, удалить
+                            </button>
+                            <a href="@Url.Action("Index")" class="close-tab-on-cancel btn btn-secondary rounded-pill px-4 py-2">
+                                <i class="bi bi-arrow-left me-2"></i> Отмена
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

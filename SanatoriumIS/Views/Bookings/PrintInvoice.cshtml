@@ -1,0 +1,367 @@
+﻿@model SanatoriumIS.Models.Booking
+@{
+    Layout = null;
+    var procedures = ViewBag.Procedures as List<SanatoriumIS.Models.ProcedureAssignment> ?? new List<SanatoriumIS.Models.ProcedureAssignment>();
+    var nights = (Model.CheckOut - Model.CheckIn).Days;
+    var roomPrice = ViewBag.RoomPrice as decimal? ?? 0;
+    var stayTotal = roomPrice * nights;
+    var servicesTotal = Model.BookingServices?.Sum(bs => bs.PriceAtTime * bs.Quantity) ?? 0;
+    var proceduresTotal = procedures.Sum(p => p.Procedure?.Price ?? 0);
+    var grandTotal = stayTotal + servicesTotal + proceduresTotal;
+    var isDoubleRoom = Model.Room?.Capacity == 2;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+
+    <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            @@media print {
+                body {
+                    margin: 0;
+                    padding: 0;
+                }
+
+                .no-print {
+                    display: none;
+                }
+
+                a, a:link, a:visited, a:hover, a:active {
+                    text-decoration: none !important;
+                    color: black !important;
+                }
+
+                    a[href]:after {
+                        content: none !important;
+                        display: none !important;
+                    }
+            }
+
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                padding: 20px;
+                max-width: 800px;
+                margin: 0 auto;
+            }
+
+            .invoice-header {
+                text-align: center;
+                margin-bottom: 30px;
+                border-bottom: 2px solid #2d5a3b;
+                padding-bottom: 20px;
+            }
+
+                .invoice-header h1 {
+                    color: #2d5a3b;
+                    margin: 0;
+                    font-size: 24px;
+                }
+
+                .invoice-header p {
+                    margin: 5px 0;
+                    color: #666;
+                    font-size: 14px;
+                }
+
+            .section {
+                margin-bottom: 25px;
+            }
+
+            .section-title {
+                background: #2d5a3b;
+                color: white;
+                padding: 8px 12px;
+                border-radius: 8px;
+                font-size: 16px;
+                margin-bottom: 15px;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 15px;
+            }
+
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+
+            th {
+                background: #f5f5f5;
+                font-weight: 600;
+            }
+
+            .text-right {
+                text-align: right;
+            }
+
+            .total-row {
+                font-weight: bold;
+                background: #e8f5e9;
+            }
+
+            .footer {
+                margin-top: 40px;
+                text-align: center;
+                font-size: 12px;
+                color: #999;
+                border-top: 1px solid #ddd;
+                padding-top: 20px;
+            }
+
+            .signature {
+                margin-top: 40px;
+                display: flex;
+                justify-content: space-between;
+            }
+
+            .btn-print, .btn-back {
+                display: inline-block;
+                margin-bottom: 20px;
+                margin-right: 10px;
+                padding: 8px 16px;
+                background: #2d5a3b;
+                color: white;
+                text-align: center;
+                border-radius: 8px;
+                cursor: pointer;
+                border: none;
+                font-size: 14px;
+                text-decoration: none;
+            }
+
+            .btn-back {
+                background: #6c757d;
+            }
+
+            .btn-print:hover {
+                background: #1e3b2a;
+            }
+
+            .btn-back:hover {
+                background: #5a6268;
+            }
+
+            .client-info {
+                margin-bottom: 10px;
+            }
+
+            .client-label {
+                font-weight: bold;
+                width: 130px;
+                display: inline-block;
+            }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+        <a href="javascript:history.back()" class="btn-back">← Вернуться назад</a>
+        <button onclick="window.print()" class="btn-print">🖨️ Печать</button>
+    </div>
+
+    <div class="invoice-header">
+        <h1>Санаторий "Нижне-Ивкино"</h1>
+        <p>Расчетный лист № @Model.Id от @DateTime.Now.ToString("dd.MM.yyyy")</p>
+    </div>
+
+    <!-- Информация о клиенте -->
+    <div class="section">
+        <div class="section-title">Информация о клиенте</div>
+        @if (isDoubleRoom)
+        {
+            <div class="client-info">
+                <span class="client-label">Первый клиент:</span> @Model.Client?.FullName
+            </div>
+            if (Model.SecondClient != null)
+            {
+                <div class="client-info">
+                    <span class="client-label">Второй клиент:</span> @Model.SecondClient.FullName
+                </div>
+            }
+        }
+        else
+        {
+            <div class="client-info">
+                <span class="client-label">Клиент:</span> @Model.Client?.FullName
+            </div>
+        }
+        <div class="client-info">
+            <span class="client-label">Период проживания:</span> @Model.CheckIn.ToString("dd.MM.yyyy") — @Model.CheckOut.ToString("dd.MM.yyyy") (@nights ночей)
+        </div>
+        @if (Model.CheckedOutAt.HasValue)
+        {
+            <div class="client-info">
+                <span class="client-label">Дата выселения:</span> @Model.CheckedOutAt.Value.ToString("dd.MM.yyyy HH:mm")
+            </div>
+        }
+        <div class="client-info">
+            <span class="client-label">Номер:</span> №@Model.Room?.Number (@(Model.Room?.Capacity == 1 ? "одноместный" : "двухместный"), @Model.Room?.Category)
+        </div>
+    </div>
+
+    <!-- Проживание -->
+    <div class="section">
+        <div class="section-title">Проживание</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Услуга</th>
+                    <th class="text-right">Цена за ночь</th>
+                    <th class="text-right">Количество ночей</th>
+                    <th class="text-right">Сумма</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Проживание в номере (@Model.Room?.Category)</td>
+                    <td class="text-right">@roomPrice.ToString("N0") ₽</td>
+                    <td class="text-right">@nights</td>
+                    <td class="text-right">@stayTotal.ToString("N0") ₽</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Дополнительные услуги -->
+    @if (Model.BookingServices != null && Model.BookingServices.Any())
+    {
+        <div class="section">
+            <div class="section-title">Дополнительные услуги</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Услуга</th>
+                        <th class="text-right">Цена</th>
+                        <th class="text-right">Сумма</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var bs in Model.BookingServices)
+                    {
+                        var serviceTotal = bs.PriceAtTime * bs.Quantity;
+                        <tr>
+                            <td>@bs.Service?.Name</td>
+                            <td class="text-right">@bs.PriceAtTime.ToString("N0") ₽</td>
+                            <td class="text-right">@serviceTotal.ToString("N0") ₽</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td colspan="2" class="text-right"><strong>Итого услуги:</strong></td>
+                        <td class="text-right"><strong>@servicesTotal.ToString("N0") ₽</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    }
+
+    <!-- Процедуры (если есть) -->
+    @if (procedures.Any())
+    {
+        var groupedProcedures = procedures
+            .GroupBy(p => new { p.ClientId, p.Client?.FullName, p.ProcedureId, p.Procedure?.Name, p.Procedure?.Price })
+            .Select(g => new
+            {
+                g.Key.ClientId,
+                g.Key.FullName,
+                g.Key.ProcedureId,
+                g.Key.Name,
+                Price = g.Key.Price ?? 0,
+                Dates = g.Select(p => p.ProcedureDate).Distinct().OrderBy(d => d).ToList(),
+                Count = g.Count()
+            })
+            .OrderBy(g => g.FullName)
+            .ThenBy(g => g.Name)
+            .ToList();
+
+        <div class="section">
+            <div class="section-title">Медицинские процедуры</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Клиент</th>
+                        <th>Процедура</th>
+                        <th>Даты проведения</th>
+                        <th class="text-right">Кол-во</th>
+                        <th class="text-right">Цена за шт.</th>
+                        <th class="text-right">Сумма</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var proc in groupedProcedures)
+                    {
+                        var totalPrice = proc.Price * proc.Count;
+                        var dates = string.Join(", ", proc.Dates.Select(d => d.ToString("dd.MM.yyyy")));
+                        <tr>
+                            <td>@proc.FullName</td>
+                            <td>@proc.Name</td>
+                            <td>@dates</td>
+                            <td class="text-right">@proc.Count</td>
+                            <td class="text-right">@proc.Price.ToString("N0") ₽</td>
+                            <td class="text-right">@totalPrice.ToString("N0") ₽</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td colspan="5" class="text-right"><strong>Итого процедуры:</strong></td>
+                        <td class="text-right"><strong>@proceduresTotal.ToString("N0") ₽</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    }
+
+    <!-- Итого -->
+    <div class="section">
+        <div class="section-title">Итоговая сумма</div>
+        <table>
+            <tbody>
+                <tr>
+                    <td width="60%"><strong>Проживание:</strong></td>
+                    <td class="text-right"><strong>@stayTotal.ToString("N0") ₽</strong></td>
+                </tr>
+                @if (servicesTotal > 0)
+                {
+                    <tr>
+                        <td><strong>Дополнительные услуги:</strong></td>
+                        <td class="text-right"><strong>@servicesTotal.ToString("N0") ₽</strong></td>
+                    </tr>
+                }
+                @if (proceduresTotal > 0)
+                {
+                    <tr>
+                        <td><strong>Медицинские процедуры:</strong></td>
+                        <td class="text-right"><strong>@proceduresTotal.ToString("N0") ₽</strong></td>
+                    </tr>
+                }
+                <tr class="total-row">
+                    <td><strong>ИТОГО К ОПЛАТЕ:</strong></td>
+                    <td class="text-right"><strong>@grandTotal.ToString("N0") ₽</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="signature">
+        <div>_________________</div>
+        <div>_________________</div>
+        <div>М.П.</div>
+    </div>
+
+    <div class="footer">
+        <p>Спасибо за выбор нашего санатория! Желаем вам крепкого здоровья!</p>
+        <p>Данный документ является официальным расчетным листом.</p>
+    </div>
+</body>
+</html>

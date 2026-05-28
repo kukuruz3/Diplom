@@ -1,0 +1,66 @@
+﻿@{
+    Layout = null;
+    var booking = ViewBag.Booking as SanatoriumIS.Models.Booking;
+    var clients = ViewBag.Clients as List<SelectListItem>;
+    var isDownload = ViewBag.IsDownload == true;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Выбор клиента</title>
+    <style>
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                padding: 20px;
+                max-width: 600px;
+                margin: 0 auto;
+            }
+            .card {
+                border: 1px solid #ddd;
+                border-radius: 16px;
+                padding: 24px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            }
+            .btn {
+                display: block;
+                width: 100%;
+                padding: 12px;
+                margin-bottom: 12px;
+                background: #2d5a3b;
+                color: white;
+                text-align: center;
+                border-radius: 8px;
+                text-decoration: none;
+                font-size: 16px;
+            }
+            .btn:hover {
+                background: #1e3b2a;
+            }
+            h2 {
+                color: #2d5a3b;
+            }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Выберите клиента</h2>
+        @foreach (var client in clients)
+        {
+            if (isDownload)
+            {
+                <a href="@Url.Action("DownloadProceduresInvoice", new { id = booking.Id, clientId = client.Value })" class="btn">
+                    @client.Text
+                </a>
+            }
+            else
+            {
+                <a href="@Url.Action("PrintProceduresInvoice", new { id = booking.Id, clientId = client.Value })" class="btn">
+                    @client.Text
+                </a>
+            }
+        }
+    </div>
+</body>
+</html>

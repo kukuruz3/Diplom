@@ -1,0 +1,187 @@
+﻿@model SanatoriumIS.Models.Booking
+@using Microsoft.EntityFrameworkCore
+@inject SanatoriumIS.Data.ApplicationDbContext _context
+
+@{
+    ViewData["Title"] = "Детали бронирования";
+
+    SanatoriumIS.Models.RoomPrice roomPrice = null;
+    if (Model.Room != null)
+    {
+        roomPrice = await _context.RoomPrices
+            .FirstOrDefaultAsync(p => p.Capacity == Model.Room.Capacity && p.Category == Model.Room.Category);
+    }
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="px-4 py-3" style="background: linear-gradient(145deg, #7cb19d 0%, #6b9e8a 100%);">
+                    <h3 class="text-white mb-0 fw-bold">
+                        <i class="bi bi-calendar-check me-2"></i> Детали бронирования
+                    </h3>
+                    <p class="text-white-50 mb-0 mt-1">Информация о бронировании</p>
+                </div>
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-receipt" style="font-size: 64px; color: #4a7c5e;"></i>
+                    </div>
+
+                    <dl class="row">
+                        @if (Model.Room?.Capacity == 2)
+                        {
+                            <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                                <i class="bi bi-person me-2 text-success"></i> Первый клиент
+                            </dt>
+                            <dd class="col-sm-8 p-3 mb-2">
+                                <i class="bi bi-person-circle text-success me-2"></i>
+                                <strong>@Model.Client?.FullName</strong>
+                            </dd>
+
+                            @if (Model.SecondClient != null)
+                            {
+                                <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                                    <i class="bi bi-person me-2 text-info"></i> Второй клиент
+                                </dt>
+                                <dd class="col-sm-8 p-3 mb-2">
+                                    <i class="bi bi-person-circle text-info me-2"></i>
+                                    <strong>@Model.SecondClient?.FullName</strong>
+                                </dd>
+                            }
+                        }
+                        else
+                        {
+                            <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                                <i class="bi bi-person me-2 text-success"></i> Клиент
+                            </dt>
+                            <dd class="col-sm-8 p-3 mb-2">
+                                <i class="bi bi-person-circle text-success me-2"></i>
+                                <strong>@Model.Client?.FullName</strong>
+                            </dd>
+                        }
+
+                        <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                            <i class="bi bi-door-closed me-2 text-success"></i> Номер
+                        </dt>
+                        <dd class="col-sm-8 p-3 mb-2">
+                            <span class="badge bg-light text-dark px-3 py-2 rounded-pill">
+                                <i class="bi bi-door-closed me-1 text-primary"></i>
+                                № @Model.Room?.Number
+                                <span class="text-muted ms-1">
+                                    (@(Model.Room?.Capacity == 1 ? "одноместный" : "двухместный"))
+                                </span>
+                            </span>
+                            <br />
+                            <small class="text-muted">
+                                <i class="bi bi-star me-1"></i> Категория: @Model.Room?.Category
+                            </small>
+                        </dd>
+
+                        @if (Model.BookingServices != null && Model.BookingServices.Any())
+                        {
+                            <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                                <i class="bi bi-grid-3x3-gap-fill me-2 text-success"></i> Дополнительные услуги
+                            </dt>
+                            <dd class="col-sm-8 p-3 mb-2">
+                                @foreach (var bs in Model.BookingServices)
+                                {
+                                    <div class="mb-1">
+                                        <i class="bi bi-check-circle text-success me-2"></i>
+                                        @bs.Service?.Name - @bs.PriceAtTime.ToString("N0") ₽
+                                    </div>
+                                }
+                            </dd>
+                        }
+
+                        <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                            <i class="bi bi-calendar-plus me-2 text-success"></i> Дата заезда
+                        </dt>
+                        <dd class="col-sm-8 p-3 mb-2">
+                            <i class="bi bi-calendar3 me-1 text-success"></i>
+                            @Model.CheckIn.ToShortDateString()
+                            <br />
+                            <small class="text-muted">с 14:00</small>
+                        </dd>
+
+                        <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                            <i class="bi bi-calendar-minus me-2 text-danger"></i> Дата выезда
+                        </dt>
+                        <dd class="col-sm-8 p-3 mb-2">
+                            <i class="bi bi-calendar3 me-1 text-danger"></i>
+                            @Model.CheckOut.ToShortDateString()
+                            <br />
+                            <small class="text-muted">до 12:00</small>
+                        </dd>
+
+                        <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                            <i class="bi bi-info-circle me-2 text-primary"></i> Статус
+                        </dt>
+                        <dd class="col-sm-8 p-3 mb-2">
+                            @if (Model.IsCheckedOut)
+                            {
+                                <span class="badge bg-secondary px-3 py-2 rounded-pill">
+                                    <i class="bi bi-door-closed me-1"></i> Выселен
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success px-3 py-2 rounded-pill">
+                                    <i class="bi bi-check-circle me-1"></i> Активен
+                                </span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                            <i class="bi bi-clock me-2 text-primary"></i> Количество дней
+                        </dt>
+                        <dd class="col-sm-8 p-3 mb-2">
+                            <span class="fw-bold text-success fs-4">
+                                @((Model.CheckOut - Model.CheckIn).Days)
+                            </span>
+                        </dd>
+
+                        @if (roomPrice != null)
+                        {
+                            var totalPrice = roomPrice.PricePerNight * (Model.CheckOut - Model.CheckIn).Days;
+                            <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                                <i class="bi bi-currency-ruble me-2 text-success"></i> Стоимость проживания
+                            </dt>
+                            <dd class="col-sm-8 p-3 mb-2">
+                                <span class="fw-bold text-success fs-3">
+                                    @totalPrice.ToString("N0") ₽
+                                </span>
+                                <br />
+                                <small class="text-muted">
+                                    (@roomPrice.PricePerNight.ToString("N0") ₽/ночь × @((Model.CheckOut - Model.CheckIn).Days))
+                                </small>
+                            </dd>
+                        }
+                    </dl>
+
+                    <div class="d-flex flex-wrap justify-content-center gap-3 mt-4 pt-3" style="border-top: 1px solid #d9e5dc;">
+                        <a asp-action="DownloadInvoice" asp-route-id="@Model.Id" class="btn btn-outline-primary rounded-pill px-4 py-2">
+                            <i class="bi bi-file-word me-2"></i> Скачать расчетный лист
+                        </a>
+                        <a asp-action="DownloadProceduresInvoice" asp-route-id="@Model.Id" class="btn btn-outline-info rounded-pill px-4 py-2">
+                            <i class="bi bi-heart-pulse me-2"></i> Скачать расчетный лист процедур
+                        </a>
+                        @if (!Model.IsCheckedOut)
+                        {
+                            <form asp-action="Checkout" asp-route-id="@Model.Id" method="post" style="display: inline;">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-outline-danger rounded-pill px-4 py-2"
+                                        onclick="return confirm('Подтвердите выселение клиента.')">
+                                    <i class="bi bi-door-closed me-2"></i> Выселить
+                                </button>
+                            </form>
+                        }
+                        <a href="@Url.Action("Index")" class="close-tab-on-cancel btn btn-outline-secondary rounded-pill px-4 py-2">
+                            <i class="bi bi-arrow-left me-2"></i> Назад к списку
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

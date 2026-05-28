@@ -1,0 +1,101 @@
+﻿@model SanatoriumIS.Models.Employee
+
+@{
+    ViewData["Title"] = "Детали сотрудника";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="px-4 py-3" style="background: linear-gradient(145deg, #7cb19d 0%, #6b9e8a 100%);">
+                    <h3 class="text-white mb-0 fw-bold">
+                        <i class="bi bi-person-badge me-2"></i> Детали сотрудника
+                    </h3>
+                    <p class="text-white-50 mb-0 mt-1">Информация о сотруднике</p>
+                </div>
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-person-circle" style="font-size: 64px; color: #4a7c5e;"></i>
+                    </div>
+
+                    <dl class="row">
+                        <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                            <i class="bi bi-person me-2 text-success"></i> ФИО
+                        </dt>
+                        <dd class="col-sm-8 p-3 mb-2">@Model.FullName</dd>
+
+                        <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                            <i class="bi bi-briefcase me-2 text-primary"></i> Должность
+                        </dt>
+                        <dd class="col-sm-8 p-3 mb-2">@Model.Position</dd>
+
+                        @if (!string.IsNullOrEmpty(Model.Specialization))
+                        {
+                            <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                                <i class="bi bi-tag me-2 text-info"></i> Специализация
+                            </dt>
+                            <dd class="col-sm-8 p-3 mb-2">@Model.Specialization</dd>
+                        }
+
+                        <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                            <i class="bi bi-telephone me-2 text-success"></i> Телефон
+                        </dt>
+                        <dd class="col-sm-8 p-3 mb-2">@Model.Phone</dd>
+
+                        <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                            <i class="bi bi-envelope me-2 text-secondary"></i> Email
+                        </dt>
+                        <dd class="col-sm-8 p-3 mb-2">@Model.Email</dd>
+
+                        @if (Model.ProcedureRoom != null)
+                        {
+                            <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                                <i class="bi bi-building me-2 text-primary"></i> Основной кабинет
+                            </dt>
+                            <dd class="col-sm-8 p-3 mb-2">@Model.ProcedureRoom.Name (№@Model.ProcedureRoom.RoomNumber)</dd>
+                        }
+
+                        <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                            <i class="bi bi-calendar3 me-2 text-success"></i> Дата приема
+                        </dt>
+                        <dd class="col-sm-8 p-3 mb-2">@Model.HireDate.ToShortDateString()</dd>
+
+                        <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                            <i class="bi bi-currency-ruble me-2 text-success"></i> Зарплата
+                        </dt>
+                        <dd class="col-sm-8 p-3 mb-2">@Model.Salary.ToString("N0") ₽</dd>
+
+                        <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                            <i class="bi bi-check-circle me-2 text-success"></i> Статус
+                        </dt>
+                        <dd class="col-sm-8 p-3 mb-2">
+                            @if (Model.IsActive)
+                            {
+                                <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">
+                                    <i class="bi bi-check-circle me-1"></i> Активен
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill">
+                                    <i class="bi bi-x-circle me-1"></i> Неактивен
+                                </span>
+                            }
+                        </dd>
+                    </dl>
+
+                    <div class="d-flex justify-content-center gap-3 mt-4 pt-3" style="border-top: 1px solid #d9e5dc;">
+                        <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn px-4 py-2 rounded-pill shadow-sm fw-semibold"
+                           style="background: linear-gradient(135deg, #4a9e6b 0%, #3d8a5c 100%); color: white;">
+                            <i class="bi bi-pencil me-2"></i> Редактировать
+                        </a>
+                        <a href="@Url.Action("Index")" class="close-tab-on-cancel btn btn-outline-secondary rounded-pill px-4 py-2">
+                            <i class="bi bi-arrow-left me-2"></i> Назад к списку
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

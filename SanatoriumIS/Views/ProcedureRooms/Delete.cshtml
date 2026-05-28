@@ -1,0 +1,77 @@
+﻿@model SanatoriumIS.Models.ProcedureRoom
+
+@{
+    ViewData["Title"] = "Удаление кабинета";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="px-4 py-3" style="background: linear-gradient(145deg, #e8b5ab 0%, #d6a094 100%);">
+                    <h3 class="text-white mb-0 fw-bold">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> Удаление кабинета
+                    </h3>
+                    <p class="text-white-50 mb-0 mt-1">Внимание! Это действие нельзя отменить</p>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-warning rounded-3 mb-4" style="background-color: #fef5e7; border-color: #fce4b4;">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        <strong>Подтверждение удаления:</strong> Вы действительно хотите удалить этот кабинет?
+                        @if (Model.ProcedureAssignments != null && Model.ProcedureAssignments.Any())
+                        {
+                            <span class="d-block mt-2 text-danger">
+                                <i class="bi bi-exclamation-triangle me-1"></i> Внимание! У этого кабинета есть назначенные процедуры!
+                            </span>
+                        }
+                    </div>
+
+                    <div class="text-center mb-4">
+                        <i class="bi bi-building-slash" style="font-size: 64px; color: #d6a094;"></i>
+                    </div>
+
+                    <dl class="row">
+                        <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                            <i class="bi bi-hash me-2"></i> Номер кабинета
+                        </dt>
+                        <dd class="col-sm-8 p-3 mb-2">№ @Model.RoomNumber</dd>
+
+                        <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                            <i class="bi bi-tag me-2"></i> Название
+                        </dt>
+                        <dd class="col-sm-8 p-3 mb-2">@Model.Name</dd>
+
+                        @if (!string.IsNullOrEmpty(Model.RoomType))
+                        {
+                            <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                                <i class="bi bi-building me-2 text-primary"></i> Тип кабинета
+                            </dt>
+                            <dd class="col-sm-8 p-3 mb-2">@Model.RoomType</dd>
+                        }
+
+                        @if (!string.IsNullOrEmpty(Model.Description))
+                        {
+                            <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                                <i class="bi bi-chat-text me-2"></i> Описание
+                            </dt>
+                            <dd class="col-sm-8 p-3 mb-2">@Model.Description</dd>
+                        }
+                    </dl>
+
+                    <form asp-action="Delete">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="d-flex justify-content-center gap-3 mt-4 pt-3" style="border-top: 1px solid #d9e5dc;">
+                            <button type="submit" class="btn px-4 py-2 rounded-pill shadow-sm fw-semibold"
+                                    style="background: linear-gradient(135deg, #c43333 0%, #a33333 100%); color: white;">
+                                <i class="bi bi-trash me-2"></i> Да, удалить
+                            </button>
+                            <a href="@Url.Action("Index")" class="close-tab-on-cancel btn btn-secondary rounded-pill px-4 py-2">
+                                <i class="bi bi-arrow-left me-2"></i> Отмена
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

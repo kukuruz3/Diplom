@@ -1,0 +1,842 @@
+﻿@model SanatoriumIS.ViewModels.CalendarViewModel
+
+@{
+    ViewData["Title"] = "Назначение процедур - Календарь";
+}
+
+<div class="container-fluid px-2 px-md-4 mt-2 mt-md-4">
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+        <!-- Заголовок -->
+        <div class="px-3 px-md-4 py-3" style="background: linear-gradient(145deg, #2d5a3b 0%, #3d6e4a 100%);">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                <div>
+                    <h2 class="text-white mb-0 fw-bold fs-3 fs-md-2">
+                        <i class="bi bi-calendar-week me-2"></i> Назначение процедур
+                    </h2>
+                    <p class="text-white-50 mb-0 mt-1 small">
+                        Интерактивный календарь для назначения процедур клиентам
+                    </p>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-sm rounded-pill px-3 filter-status active" data-filter="all"
+                            style="background: linear-gradient(135deg, #2d5a3b 0%, #3d6e4a 100%); color: white; border: none;">
+                        <i class="bi bi-grid-3x3-gap-fill me-1"></i> Все
+                    </button>
+                    <button class="btn btn-sm rounded-pill px-3 filter-status" data-filter="available"
+                            style="background: linear-gradient(135deg, #5f8c69 0%, #4f7557 100%); color: white; border: none;">
+                        <i class="bi bi-check-circle me-1"></i> Свободно
+                    </button>
+                    <button class="btn btn-sm rounded-pill px-3 filter-status" data-filter="busy"
+                            style="background: linear-gradient(135deg, #dcb5ad 0%, #c49a8e 100%); color: white; border: none;">
+                        <i class="bi bi-x-circle me-1"></i> Занято
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body p-3 p-md-4">
+            <!-- Фильтры -->
+            <div class="row g-2 g-md-3 mb-4">
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold text-dark small">
+                        <i class="bi bi-building me-2 text-success"></i> Процедурный кабинет
+                    </label>
+                    <select id="roomSelect" class="form-select form-select-sm form-select-md rounded-3 shadow-sm border-0 bg-light">
+                        @foreach (var room in Model.Rooms)
+                        {
+                            <option value="@room.Id" selected="@(room.Id == Model.SelectedRoomId)">
+                                @room.Name (№@room.RoomNumber)
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div class="col-12 col-md-3">
+                    <label class="form-label fw-semibold text-dark small">
+                        <i class="bi bi-calendar3 me-2 text-success"></i> Дата
+                    </label>
+                    <input type="date" id="datePicker" class="form-control form-control-sm form-control-md rounded-3 shadow-sm border-0 bg-light"
+                           value="@Model.SelectedDate.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="col-12 col-md-3">
+                    <label class="form-label fw-semibold text-dark small">
+                        <i class="bi bi-funnel me-2 text-success"></i> Фильтр по клиенту
+                    </label>
+                    <select id="clientFilter" class="form-select form-select-sm form-control-md rounded-3 shadow-sm border-0 bg-light">
+                        <option value="">-- Все клиенты --</option>
+                        @if (ViewBag.Clients != null)
+                        {
+                            foreach (var client in ViewBag.Clients)
+                            {
+                                <option value="@client.Id">@client.FullName</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-12 col-md-2 d-flex align-items-end">
+                    <button id="refreshBtn" class="btn w-100 rounded-pill shadow-sm fw-semibold btn-sm btn-md"
+                            style="background: linear-gradient(135deg, #2d5a3b 0%, #3d6e4a 100%); color: white;">
+                        <i class="bi bi-arrow-repeat me-2"></i> Обновить
+                    </button>
+                </div>
+            </div>
+
+            <!-- Информационная панель -->
+            <div class="alert alert-info rounded-3 mb-3 py-2 small" style="background-color: #e8f5e9; border-color: #c8e6c9;">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <div><i class="bi bi-clock me-1"></i> <strong>Часы работы:</strong> 08:00 - 16:00</div>
+                    <div><i class="bi bi-cup-hot me-1"></i> <strong>Обед:</strong> 12:00 - 13:00</div>
+                    <div class="text-primary"><i class="bi bi-mouse me-1"></i> Нажмите на зеленый слот для записи</div>
+                </div>
+            </div>
+
+            <!-- Таймлайн -->
+            <div id="timelineContainer" class="timeline-wrapper" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-success" role="status">
+                        <span class="visually-hidden">Загрузка...</span>
+                    </div>
+                    <p class="mt-2 text-muted small">Загрузка расписания...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для создания -->
+<div class="modal fade" id="createModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0" style="background: linear-gradient(135deg, #2d5a3b 0%, #3d6e4a 100%); border-radius: 20px 20px 0 0;">
+                <h5 class="modal-title text-white fw-bold">
+                    <i class="bi bi-plus-circle me-2"></i> Назначение процедуры
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="createForm">
+                    <input type="hidden" id="selectedRoomId" />
+                    <input type="hidden" id="selectedDate" />
+                    <input type="hidden" id="selectedStartTime" />
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold mb-1">
+                            <i class="bi bi-person me-2 text-success"></i> Клиент <span class="text-danger">*</span>
+                        </label>
+                        <select id="clientId" class="form-select form-select-sm rounded-3" required>
+                            <option value="">-- Выберите клиента --</option>
+                            @if (ViewBag.Clients != null)
+                            {
+                                foreach (var client in ViewBag.Clients)
+                                {
+                                    <option value="@client.Id">@client.FullName</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold mb-1">
+                            <i class="bi bi-heart-pulse me-2 text-success"></i> Процедура <span class="text-danger">*</span>
+                        </label>
+                        <select id="procedureId" class="form-select form-select-sm rounded-3" required>
+                            <option value="">-- Выберите процедуру --</option>
+                        </select>
+                    </div>
+
+                    <div class="alert alert-secondary rounded-3 mb-3 py-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-building fs-5 text-success"></i>
+                            <div>
+                                <div class="fw-semibold small">Выбранный кабинет</div>
+                                <div id="displayRoomName" class="fw-bold">--</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-success rounded-3 mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-clock-history fs-5"></i>
+                            <div>
+                                <div class="fw-semibold small">Выбранное время</div>
+                                <div id="displayStartTime" class="fs-6 fw-bold">--:--</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold mb-1">
+                            <i class="bi bi-clock me-2 text-info"></i> Время окончания
+                        </label>
+                        <input type="text" id="endTimeDisplay" class="form-control form-control-sm rounded-3 bg-light" readonly placeholder="Рассчитается автоматически" />
+                    </div>
+
+                    <div id="procedureInfo" class="alert alert-info rounded-3 p-2 small" style="display: none;">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        <span id="procedureInfoText"></span>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-sm rounded-pill px-3" style="background-color: #f0f2f5; color: #555;" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-2"></i> Отмена
+                </button>
+                <button type="button" id="saveBtn" class="btn btn-sm rounded-pill px-3 shadow-sm fw-semibold"
+                        style="background: linear-gradient(135deg, #2d5a3b 0%, #3d6e4a 100%); color: white;">
+                    <i class="bi bi-save me-2"></i> Сохранить
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для подтверждения удаления -->
+<div class="modal fade" id="deleteModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0" style="background: linear-gradient(135deg, #c43333 0%, #a33333 100%); border-radius: 20px 20px 0 0;">
+                <h5 class="modal-title text-white fw-bold">
+                    <i class="bi bi-trash me-2"></i> Удаление назначения
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p>Вы действительно хотите удалить это назначение?</p>
+                <p><strong>Процедура:</strong> <span id="deleteProcedureName"></span></p>
+                <p><strong>Клиент:</strong> <span id="deleteClientName"></span></p>
+                <p><strong>Время:</strong> <span id="deleteTime"></span></p>
+                <p class="text-danger small">Это действие нельзя отменить!</p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-sm rounded-pill px-3" style="background-color: #f0f2f5; color: #555;" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-2"></i> Отмена
+                </button>
+                <button type="button" id="confirmDeleteBtn" class="btn btn-sm rounded-pill px-3 shadow-sm fw-semibold"
+                        style="background: linear-gradient(135deg, #c43333 0%, #a33333 100%); color: white;">
+                    <i class="bi bi-trash me-2"></i> Удалить
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .timeline-wrapper {
+        background: #f8f9fc;
+        border-radius: 20px;
+        padding: 12px;
+        overflow-x: auto;
+    }
+
+    .timeline-header, .timeline-row {
+        display: flex;
+        min-width: 600px;
+    }
+
+    .timeline-header {
+        background: white;
+        border-bottom: 2px solid #e9ecef;
+        border-radius: 12px 12px 0 0;
+        margin-bottom: 8px;
+    }
+
+    .time-column-header, .time-label {
+        width: 100px;
+        flex-shrink: 0;
+    }
+
+    .slots-header, .slots-row {
+        flex: 1;
+        display: flex;
+        gap: 4px;
+        min-width: 200px;
+    }
+
+    .slot-header, .time-slot {
+        flex: 1;
+        text-align: center;
+    }
+
+    .time-column-header, .slot-header {
+        padding: 10px 5px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #2d5a3b;
+    }
+
+    .time-label {
+        padding: 12px 8px;
+        font-weight: 600;
+        color: #2d5a3b;
+        background: white;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+    }
+
+    .time-slot {
+        min-height: 65px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        padding: 4px;
+        position: relative;
+    }
+
+        .time-slot.available {
+            background: #e8f5e9;
+            border: 2px solid #a5d6a7;
+        }
+
+            .time-slot.available:hover {
+                background: #c8e6c9;
+                transform: scale(1.02);
+            }
+
+        .time-slot.busy {
+            background: #ffebee;
+            border: 1px solid #ef9a9a;
+        }
+
+            .time-slot.busy.completed {
+                background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+                border: 1px solid #90caf9;
+            }
+
+        .time-slot.lunch {
+            background: #fff3e0;
+            border: 2px solid #ff9800;
+            cursor: not-allowed;
+        }
+
+            .time-slot.lunch .slot-time {
+                color: #e65100;
+                font-weight: bold;
+            }
+
+            .time-slot.lunch .slot-hint {
+                color: #ff9800;
+            }
+
+        .time-slot.multi-slot {
+            position: relative;
+            z-index: 2;
+        }
+
+            .time-slot.multi-slot::after {
+                content: '↔️';
+                position: absolute;
+                right: 5px;
+                bottom: 5px;
+                font-size: 10px;
+                opacity: 0.5;
+            }
+
+        .time-slot.hidden {
+            display: none;
+        }
+
+    .slot-time {
+        font-size: 12px;
+        font-weight: 700;
+        color: #2e7d32;
+    }
+
+    .slot-hint {
+        font-size: 9px;
+        color: #4caf50;
+        margin-top: 2px;
+    }
+
+    .slot-info {
+        text-align: center;
+        font-size: 10px;
+        width: 100%;
+        cursor: pointer;
+    }
+
+        .slot-info .title {
+            font-weight: 700;
+            color: #c62828;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+    .time-slot.completed .slot-info .title {
+        color: #1565c0;
+    }
+
+    .slot-info .client {
+        font-size: 9px;
+        color: #d32f2f;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .time-slot.completed .slot-info .client {
+        color: #1565c0;
+    }
+
+    .delete-icon {
+        position: absolute;
+        top: 3px;
+        right: 5px;
+        font-size: 10px;
+        color: #c43333;
+        opacity: 0;
+        transition: opacity 0.2s;
+        cursor: pointer;
+        z-index: 10;
+    }
+
+    .time-slot.busy:hover .delete-icon {
+        opacity: 1;
+    }
+
+    .delete-icon:hover {
+        transform: scale(1.2);
+    }
+
+    .filter-status {
+        transition: all 0.2s;
+        cursor: pointer;
+        opacity: 0.7;
+        font-size: 12px;
+    }
+
+        .filter-status:hover {
+            transform: translateY(-2px);
+            opacity: 1;
+        }
+
+        .filter-status.active {
+            opacity: 1;
+            transform: scale(1.02);
+            box-shadow: 0 0 0 2px white, 0 0 0 4px #2d5a3b;
+        }
+
+    .btn-sm {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+
+    .form-select-sm, .form-control-sm {
+        font-size: 13px;
+        padding: 6px 10px;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        let currentTimeSlots = [];
+        let currentFilter = 'all';
+        let currentDeleteAssignmentId = null;
+        let roomsData = @Html.Raw(Json.Serialize(Model.Rooms));
+
+        // Загрузка расписания
+        async function loadSchedule() {
+            const roomId = $('#roomSelect').val();
+            const date = $('#datePicker').val();
+            const clientFilter = $('#clientFilter').val();
+
+            if (!roomId || !date) return;
+
+            $('#timelineContainer').html(`
+                <div class="text-center py-5">
+                    <div class="spinner-border text-success" role="status">
+                        <span class="visually-hidden">Загрузка...</span>
+                    </div>
+                    <p class="mt-2 text-muted small">Загрузка расписания...</p>
+                </div>
+            `);
+
+            try {
+                let url = `/ProcedureAssignments/GetSchedule?roomId=${roomId}&date=${encodeURIComponent(date)}`;
+                if (currentFilter !== 'all') {
+                    url += `&filterType=${currentFilter}`;
+                }
+                if (clientFilter && clientFilter !== '') {
+                    url += `&clientId=${clientFilter}`;
+                }
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.success && data.timeSlots) {
+                    renderTimeline(data.timeSlots);
+                    currentTimeSlots = data.timeSlots;
+                } else {
+                    $('#timelineContainer').html(`<div class="alert alert-danger small">Ошибка: ${data.message || 'Не удалось загрузить расписание'}</div>`);
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                $('#timelineContainer').html(`<div class="alert alert-danger small">Ошибка загрузки: ${error.message}</div>`);
+            }
+        }
+
+        // Обновление фильтра клиентов при смене даты
+        async function updateClientFilter() {
+            const date = $('#datePicker').val();
+            if (!date) return;
+
+            try {
+                const response = await fetch(`/ProcedureAssignments/GetClientsWithBooking?date=${encodeURIComponent(date)}`);
+                const data = await response.json();
+
+                const clientFilter = $('#clientFilter');
+                const currentValue = clientFilter.val();
+
+                clientFilter.empty().append('<option value="">-- Все клиенты --</option>');
+
+                if (data.success && data.clients && data.clients.length > 0) {
+                    data.clients.forEach(client => {
+                        clientFilter.append(`<option value="${client.id}">${escapeHtml(client.fullName)}</option>`);
+                    });
+                }
+
+                // Восстанавливаем выбранное значение если оно ещё существует
+                if (currentValue && clientFilter.find(`option[value="${currentValue}"]`).length) {
+                    clientFilter.val(currentValue);
+                } else {
+                    clientFilter.val('');
+                }
+
+            } catch (error) {
+                console.error('Ошибка загрузки фильтра клиентов:', error);
+            }
+        }
+
+        // Отрисовка таймлайна
+        function renderTimeline(timeSlots) {
+            if (!timeSlots || timeSlots.length === 0) {
+                $('#timelineContainer').html(`
+                    <div class="text-center py-5">
+                        <i class="bi bi-calendar-x display-1 text-muted"></i>
+                        <h5 class="text-muted mt-3 small">Нет данных на выбранную дату</h5>
+                    </div>
+                `);
+                return;
+            }
+
+            let html = `
+                <div class="timeline-header">
+                    <div class="time-column-header">Время</div>
+                    <div class="slots-header">
+                        <div class="slot-header">Записи</div>
+                    </div>
+                </div>
+            `;
+
+            for (let hour = 8; hour <= 15; hour++) {
+                const hourStr = hour.toString().padStart(2, '0');
+                const firstSlot = timeSlots.find(s => s.startTime === `${hourStr}:00`);
+                const secondSlot = timeSlots.find(s => s.startTime === `${hourStr}:30`);
+
+                if (firstSlot && firstSlot.isLunch) {
+                    html += `
+                        <div class="timeline-row">
+                            <div class="time-label">${hourStr}:00 - ${hour + 1}:00</div>
+                            <div class="slots-row" style="width: 100%;">
+                                <div class="time-slot lunch" style="width: 100%;">
+                                    <div class="slot-time">🍽️ Обеденный перерыв</div>
+                                    <div class="slot-hint">12:00 - 13:00</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    continue;
+                }
+
+                html += `
+                    <div class="timeline-row">
+                        <div class="time-label">${hourStr}:00 - ${hour + 1}:00</div>
+                        <div class="slots-row">
+                            ${renderSlot(firstSlot, `${hourStr}:00`)}
+                            ${renderSlot(secondSlot, `${hourStr}:30`)}
+                        </div>
+                    </div>
+                `;
+            }
+
+            $('#timelineContainer').html(html);
+        }
+
+        // Отрисовка слота
+        function renderSlot(slot, startTime) {
+            if (!slot) {
+                return `<div class="time-slot" style="background: #f5f5f5; cursor: default;"></div>`;
+            }
+
+            if (slot.isAvailable) {
+                if (currentFilter === 'busy') {
+                    return `<div class="time-slot available hidden"></div>`;
+                }
+                return `
+                    <div class="time-slot available" onclick="openCreateModal('${startTime}')">
+                        <div class="slot-time">${startTime}</div>
+                        <div class="slot-hint">Свободно</div>
+                    </div>
+                `;
+            } else {
+                if (currentFilter === 'available') {
+                    return `<div class="time-slot busy hidden"></div>`;
+                }
+
+                const duration = slot.duration || 30;
+                const slotsCount = Math.ceil(duration / 30);
+                const isMultiSlot = slotsCount > 1;
+
+                let statusClass = '';
+                let statusIcon = '📅';
+                if (slot.status === 'Выполнена') {
+                    statusClass = 'completed';
+                    statusIcon = '✅';
+                }
+
+                const showDeleteButton = '@(User.IsInRole("Admin") || User.IsInRole("ReferringDoctor") ? "true" : "false")' === 'true';
+
+                return `
+                    <div class="time-slot busy ${isMultiSlot ? 'multi-slot' : ''} ${statusClass}"
+                        style="${isMultiSlot ? 'width: 100%;' : ''}">
+                        <div class="slot-info" onclick="showDeleteModal(${slot.assignmentId}, '${escapeHtml(slot.procedureName || '')}', '${escapeHtml(slot.clientName || '')}', '${startTime}')">
+                            <div class="title" title="${escapeHtml(slot.procedureName || '')}">
+                                ${statusIcon} ${escapeHtml((slot.procedureName || '').substring(0, 15))}${(slot.procedureName || '').length > 15 ? '...' : ''}
+                            </div>
+                            <div class="client">${escapeHtml((slot.clientName || '').substring(0, 12))}${(slot.clientName || '').length > 12 ? '...' : ''}</div>
+                        </div>
+                        ${showDeleteButton ? `<div class="delete-icon" onclick="event.stopPropagation(); showDeleteModal(${slot.assignmentId}, '${escapeHtml(slot.procedureName || '')}', '${escapeHtml(slot.clientName || '')}', '${startTime}')">🗑️</div>` : ''}
+                    </div>
+                `;
+            }
+        }
+
+        // Открытие модального окна для создания
+        window.openCreateModal = async function(startTime) {
+            if (startTime === "12:00") {
+                alert("Обеденный перерыв с 12:00 до 13:00. Выберите другое время.");
+                return;
+            }
+
+            const roomId = $('#roomSelect').val();
+            const date = $('#datePicker').val();
+            const room = roomsData.find(r => r.id == roomId);
+
+            if (room) {
+                $('#displayRoomName').text(`${room.name} (№${room.roomNumber})`);
+            }
+
+            $('#selectedRoomId').val(roomId);
+            $('#selectedDate').val(date);
+            $('#selectedStartTime').val(startTime);
+            $('#displayStartTime').text(startTime);
+            $('#endTimeDisplay').val('');
+            $('#procedureInfo').hide();
+            $('#procedureId').empty().append('<option value="">-- Выберите процедуру --</option>');
+
+            // Загружаем список клиентов с активным бронированием
+            $('#clientId').empty().append('<option value="">-- Загрузка клиентов... --</option>');
+            $('#clientId').prop('disabled', true);
+
+            try {
+                const clientsResponse = await fetch(`/ProcedureAssignments/GetClientsWithBooking?date=${encodeURIComponent(date)}`);
+                const clientsData = await clientsResponse.json();
+
+                if (clientsData.success && clientsData.clients && clientsData.clients.length > 0) {
+                    $('#clientId').empty().append('<option value="">-- Выберите клиента --</option>');
+                    clientsData.clients.forEach(client => {
+                        $('#clientId').append(`<option value="${client.id}">${escapeHtml(client.fullName)}</option>`);
+                    });
+                    $('#clientId').prop('disabled', false);
+                } else {
+                    $('#clientId').empty().append('<option value="">-- Нет клиентов с активным бронированием --</option>');
+                    $('#clientId').prop('disabled', true);
+                    alert('На выбранную дату нет клиентов с активным бронированием');
+                    return;
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки клиентов:', error);
+                $('#clientId').empty().append('<option value="">-- Ошибка загрузки --</option>');
+                $('#clientId').prop('disabled', true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`/ProcedureAssignments/GetAvailableProcedures?roomId=${roomId}&date=${encodeURIComponent(date)}&startTime=${encodeURIComponent(startTime)}`);
+                const data = await response.json();
+
+                if (data.success && data.procedures && data.procedures.length > 0) {
+                    data.procedures.forEach(proc => {
+                        $('#procedureId').append(`<option value="${proc.id}" data-duration="${proc.durationMinutes}">${escapeHtml(proc.name)} (${proc.durationMinutes} мин, ${proc.price} руб)</option>`);
+                    });
+                    $('#createModal').modal('show');
+                } else {
+                    alert(data.message || 'Нет доступных процедур для выбранного времени');
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Ошибка загрузки процедур');
+            }
+        };
+
+        // Показать модальное окно удаления
+        window.showDeleteModal = function(assignmentId, procedureName, clientName, startTime) {
+            currentDeleteAssignmentId = assignmentId;
+            $('#deleteProcedureName').text(procedureName);
+            $('#deleteClientName').text(clientName);
+            $('#deleteTime').text(startTime);
+            $('#deleteModal').modal('show');
+        };
+
+        // Удаление назначения
+        $('#confirmDeleteBtn').on('click', function() {
+            if (!currentDeleteAssignmentId) return;
+
+            $.ajax({
+                url: '/ProcedureAssignments/DeleteAssignment',
+                type: 'POST',
+                data: { assignmentId: currentDeleteAssignmentId },
+                success: function(response) {
+                    if (response.success) {
+                        $('#deleteModal').modal('hide');
+                        loadSchedule();
+                        alert(response.message);
+                    } else {
+                        alert('Ошибка: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('Ошибка при удалении назначения');
+                }
+            });
+        });
+
+        // Выбор процедуры
+        $('#procedureId').on('change', function() {
+            const selected = $(this).find('option:selected');
+            const duration = selected.data('duration');
+            const startTime = $('#selectedStartTime').val();
+
+            if (duration && startTime) {
+                const [hours, minutes] = startTime.split(':').map(Number);
+                let totalMinutes = hours * 60 + minutes + duration;
+                const endHours = Math.floor(totalMinutes / 60);
+                const endMinutes = totalMinutes % 60;
+                const endTime = `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
+                $('#endTimeDisplay').val(endTime);
+
+                const procName = selected.text().split('(')[0].trim();
+                $('#procedureInfoText').html(`${escapeHtml(procName)}<br>Длительность: ${duration} минут<br>Окончание: ${endTime}`);
+                $('#procedureInfo').show();
+            }
+        });
+
+        // Сохранение
+        $('#saveBtn').on('click', async function() {
+            const clientId = $('#clientId').val();
+            const procedureId = $('#procedureId').val();
+            const roomId = $('#selectedRoomId').val();
+            const date = $('#selectedDate').val();
+            const startTime = $('#selectedStartTime').val();
+
+            if (!clientId || !procedureId) {
+                alert('Пожалуйста, выберите клиента и процедуру');
+                return;
+            }
+
+            if (!roomId) {
+                alert('Кабинет не выбран');
+                return;
+            }
+
+            let employeeId = null;
+
+            try {
+                const empResponse = await fetch(`/Employees/GetByRoom?roomId=${roomId}`);
+                const data = await empResponse.json();
+
+                if (data.success) {
+                    employeeId = data.employeeId;
+                } else {
+                    alert(data.message || 'Для этого кабинета не назначен сотрудник');
+                    return;
+                }
+            } catch (error) {
+                console.error('Ошибка получения сотрудника:', error);
+                alert('Ошибка при проверке сотрудника');
+                return;
+            }
+
+            if (!employeeId) {
+                alert('Для этого кабинета не назначен сотрудник.');
+                return;
+            }
+
+            const requestData = {
+                clientId: parseInt(clientId),
+                procedureId: parseInt(procedureId),
+                employeeId: parseInt(employeeId),
+                roomId: parseInt(roomId),
+                date: date,
+                startTime: startTime
+            };
+
+            try {
+                const response = await fetch('/ProcedureAssignments/CreateAssignment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestData)
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    $('#createModal').modal('hide');
+                    await loadSchedule();
+                    alert(data.message);
+                } else {
+                    alert('Ошибка: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Ошибка: ' + error.message);
+            }
+        });
+
+        // Фильтры
+        $('.filter-status').on('click', function() {
+            $('.filter-status').removeClass('active');
+            $(this).addClass('active');
+            currentFilter = $(this).data('filter');
+            loadSchedule();
+        });
+
+        $('#clientFilter').on('change', loadSchedule);
+        $('#roomSelect').on('change', loadSchedule);
+        $('#datePicker').on('change', function() {
+            updateClientFilter();
+            loadSchedule();
+        });
+        $('#refreshBtn').on('click', function() {
+            updateClientFilter();
+            loadSchedule();
+        });
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        $(document).ready(function() {
+            updateClientFilter();
+            loadSchedule();
+        });
+    </script>
+}

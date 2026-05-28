@@ -1,0 +1,102 @@
+﻿@{
+    ViewData["Title"] = "Вход в систему";
+    var returnUrl = ViewData["ReturnUrl"] as string;
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="px-4 py-3" style="background: linear-gradient(145deg, #2d5a3b 0%, #3d6e4a 100%);">
+                    <h3 class="text-white mb-0 fw-bold text-center">
+                        <i class="bi bi-tree-fill me-2"></i> Санаторий "Нижне-Ивкино"
+                    </h3>
+                    <p class="text-white-50 mb-0 mt-1 text-center">Вход в систему управления</p>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" action="@Url.Action("Login", "Account")">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="returnUrl" value="@returnUrl" />
+
+                        @if (ViewBag.Error != null)
+                        {
+                            <div class="alert alert-danger rounded-3 small">
+                                @ViewBag.Error
+                            </div>
+                        }
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-envelope me-1 text-success"></i> Email
+                            </label>
+                            <input type="email" name="email" class="form-control form-control-lg rounded-3"
+                                   placeholder="admin@sanatorium.ru" autofocus required
+                                   style="background-color: #f8f9fc;" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-lock me-1 text-success"></i> Пароль
+                            </label>
+                            <div class="input-group">
+                                <input type="password" name="password" id="passwordInput" class="form-control form-control-lg rounded-3"
+                                       placeholder="••••••••" required
+                                       style="background-color: #f8f9fc;" />
+                                <button type="button" id="togglePasswordBtn" class="btn btn-outline-secondary rounded-3"
+                                        style="margin-left: 5px;">
+                                    <i id="passwordIcon" class="bi bi-eye-slash"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn w-100 py-2 rounded-pill shadow-sm fw-semibold mt-2"
+                                style="background: linear-gradient(135deg, #2d5a3b 0%, #3d6e4a 100%); color: white;">
+                            <i class="bi bi-box-arrow-in-right me-2"></i> Войти
+                        </button>
+                    </form>
+
+                    <hr class="my-4">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const togglePasswordBtn = document.getElementById('togglePasswordBtn');
+        const passwordInput = document.getElementById('passwordInput');
+        const passwordIcon = document.getElementById('passwordIcon');
+
+        if (togglePasswordBtn) {
+            togglePasswordBtn.addEventListener('click', function() {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+
+                if (type === 'text') {
+                    passwordIcon.classList.remove('bi-eye-slash');
+                    passwordIcon.classList.add('bi-eye');
+                } else {
+                    passwordIcon.classList.remove('bi-eye');
+                    passwordIcon.classList.add('bi-eye-slash');
+                }
+            });
+        }
+    </script>
+}
+
+<style>
+    input:focus {
+        box-shadow: 0 0 0 3px rgba(45, 90, 59, 0.1) !important;
+        border-color: #2d5a3b !important;
+    }
+
+    #togglePasswordBtn {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+
+    .input-group {
+        flex-wrap: nowrap;
+    }
+</style>
