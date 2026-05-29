@@ -1,0 +1,36 @@
+services:
+  sanatorium-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      SA_PASSWORD: "SanatoriumDB@2024"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Express"
+    ports:
+      - "9433:1433"
+    volumes:
+      - sanatorium-sqldata:/var/opt/mssql
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U SA -P "SanatoriumDB@2024" -Q "SELECT 1" -No || exit 1
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  sanatorium-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "9080:9080"
+    depends_on:
+      sanatorium-db:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:9080
+      - ConnectionStrings__DefaultConnection=Server=sanatorium-db;Database=SanatoriumDB;User Id=sa;Password=SanatoriumDB@2024;TrustServerCertificate=True;MultipleActiveResultSets=true
+    restart: unless-stopped
+
+volumes:
+  sanatorium-sqldata:

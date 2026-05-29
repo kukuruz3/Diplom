@@ -54,9 +54,12 @@ builder.Services.AddHostedService<RoomOccupancyBackgroundService>();
 
 var app = builder.Build();
 
-// Создаём роли и администратора при запуске
+// Применяем миграции и создаём роли и администратора при запуске
 using (var scope = app.Services.CreateScope())
 {
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();
+
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
