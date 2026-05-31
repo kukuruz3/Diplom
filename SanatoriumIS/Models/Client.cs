@@ -12,7 +12,6 @@ namespace SanatoriumIS.Models
         [StringLength(100, MinimumLength = 3, ErrorMessage = "ФИО должно содержать от 3 до 100 символов")]
         public string? FullName { get; set; }
 
-        // Оригинальный паспорт (не хранится в БД)
         [Display(Name = "Паспорт")]
         [RegularExpression(@"^\d{4}\s\d{6}$", ErrorMessage = "Неверный формат паспорта. Пример: 1234 567890")]
         [NotMapped] // Это поле не сохраняется в БД

@@ -163,9 +163,12 @@
                         <a asp-action="DownloadInvoice" asp-route-id="@Model.Id" class="btn btn-outline-primary rounded-pill px-4 py-2">
                             <i class="bi bi-file-word me-2"></i> Скачать расчетный лист
                         </a>
-                        <a asp-action="DownloadProceduresInvoice" asp-route-id="@Model.Id" class="btn btn-outline-info rounded-pill px-4 py-2">
-                            <i class="bi bi-heart-pulse me-2"></i> Скачать расчетный лист процедур
-                        </a>
+                        @if (Model.IsCheckedOut)
+                        {
+                            <a asp-action="DownloadProceduresInvoice" asp-route-id="@Model.Id" class="btn btn-outline-info rounded-pill px-4 py-2">
+                                <i class="bi bi-heart-pulse me-2"></i> Скачать расчетный лист процедур
+                            </a>
+                        }
                         @if (!Model.IsCheckedOut)
                         {
                             <form asp-action="Checkout" asp-route-id="@Model.Id" method="post" style="display: inline;">

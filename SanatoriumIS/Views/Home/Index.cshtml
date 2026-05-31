@@ -134,7 +134,7 @@
                         <span class="badge bg-success bg-opacity-10 text-success">Обновлено сейчас</span>
                     </div>
                     <div class="activity-timeline">
-                        @if (Model.UpcomingBookings.Any())
+                        @if (Model.UpcomingBookings.Any() || Model.RecentProcedures.Any())
                         {
                             @foreach (var booking in Model.UpcomingBookings.Take(3))
                             {
@@ -142,12 +142,27 @@
                                     <div class="timeline-dot"></div>
                                     <div class="timeline-content">
                                         <div class="timeline-title">
-                                            <strong>Новое бронирование</strong>
-                                            <span class="timeline-time">сегодня</span>
+                                            <strong>📅 Новое бронирование</strong>
+                                            <span class="timeline-time">@booking.CheckIn.ToString("dd.MM")</span>
                                         </div>
                                         <div class="timeline-desc">
                                             @booking.Client?.FullName забронировал номер @booking.Room?.Number
                                             на @((booking.CheckOut - booking.CheckIn).Days) ночей
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            @foreach (var proc in Model.RecentProcedures.Take(3))
+                            {
+                                <div class="timeline-item">
+                                    <div class="timeline-dot" style="background: #4caf50;"></div>
+                                    <div class="timeline-content">
+                                        <div class="timeline-title">
+                                            <strong>✅ Выполнена процедура</strong>
+                                            <span class="timeline-time">@proc.ProcedureDate.ToString("dd.MM")</span>
+                                        </div>
+                                        <div class="timeline-desc">
+                                            @proc.Client?.FullName - @proc.Procedure?.Name
                                         </div>
                                     </div>
                                 </div>

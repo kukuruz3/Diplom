@@ -12,8 +12,8 @@ using SanatoriumIS.Data;
 namespace SanatoriumIS.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260526142849_AddSystemRoleToEmployee")]
-    partial class AddSystemRoleToEmployee
+    [Migration("20260531154203_AppCon")]
+    partial class AppCon
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -251,8 +251,14 @@ namespace SanatoriumIS.Migrations
                     b.Property<DateTime>("CheckOut")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("CheckedOutAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("ClientId")
                         .HasColumnType("int");
+
+                    b.Property<bool>("IsCheckedOut")
+                        .HasColumnType("bit");
 
                     b.Property<int>("RoomId")
                         .HasColumnType("int");
@@ -269,6 +275,39 @@ namespace SanatoriumIS.Migrations
                     b.HasIndex("SecondClientId");
 
                     b.ToTable("Bookings");
+                });
+
+            modelBuilder.Entity("SanatoriumIS.Models.BookingService", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AddedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("BookingId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("PriceAtTime")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ServiceId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookingId");
+
+                    b.HasIndex("ServiceId");
+
+                    b.ToTable("BookingServices");
                 });
 
             modelBuilder.Entity("SanatoriumIS.Models.Client", b =>
@@ -341,6 +380,7 @@ namespace SanatoriumIS.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("Salary")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Specialization")
@@ -375,6 +415,7 @@ namespace SanatoriumIS.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("ProcedureType")
@@ -396,8 +437,24 @@ namespace SanatoriumIS.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("CancelReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("CancelledAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CancelledBy")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("ClientId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CompletedBy")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -425,6 +482,7 @@ namespace SanatoriumIS.Migrations
                         .HasColumnType("time");
 
                     b.Property<string>("Status")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -457,12 +515,15 @@ namespace SanatoriumIS.Migrations
 
                     b.Property<string>("RoomNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("RoomType")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("RoomNumber")
+                        .IsUnique();
 
                     b.ToTable("ProcedureRooms");
                 });
@@ -487,9 +548,12 @@ namespace SanatoriumIS.Migrations
 
                     b.Property<string>("Number")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Number")
+                        .IsUnique();
 
                     b.ToTable("Rooms");
                 });
@@ -515,9 +579,13 @@ namespace SanatoriumIS.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<decimal>("PricePerNight")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Capacity", "Category")
+                        .IsUnique();
 
                     b.ToTable("RoomPrices");
                 });
@@ -536,9 +604,13 @@ namespace SanatoriumIS.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.ToTable("Services");
                 });
@@ -598,7 +670,8 @@ namespace SanatoriumIS.Migrations
                 {
                     b.HasOne("SanatoriumIS.Models.Employee", "Employee")
                         .WithMany()
-                        .HasForeignKey("EmployeeId");
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Employee");
                 });
@@ -628,6 +701,25 @@ namespace SanatoriumIS.Migrations
                     b.Navigation("SecondClient");
                 });
 
+            modelBuilder.Entity("SanatoriumIS.Models.BookingService", b =>
+                {
+                    b.HasOne("SanatoriumIS.Models.Booking", "Booking")
+                        .WithMany("BookingServices")
+                        .HasForeignKey("BookingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SanatoriumIS.Models.Service", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Booking");
+
+                    b.Navigation("Service");
+                });
+
             modelBuilder.Entity("SanatoriumIS.Models.Employee", b =>
                 {
                     b.HasOne("SanatoriumIS.Models.ApplicationUser", "IdentityUser")
@@ -654,7 +746,7 @@ namespace SanatoriumIS.Migrations
                     b.HasOne("SanatoriumIS.Models.Employee", "Employee")
                         .WithMany("ProcedureAssignments")
                         .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SanatoriumIS.Models.Procedure", "Procedure")
@@ -676,6 +768,11 @@ namespace SanatoriumIS.Migrations
                     b.Navigation("Procedure");
 
                     b.Navigation("ProcedureRoom");
+                });
+
+            modelBuilder.Entity("SanatoriumIS.Models.Booking", b =>
+                {
+                    b.Navigation("BookingServices");
                 });
 
             modelBuilder.Entity("SanatoriumIS.Models.Employee", b =>

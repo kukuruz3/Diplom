@@ -8,7 +8,7 @@ using SanatoriumIS.ViewModels;
 
 namespace SanatoriumIS.Controllers
 {
-    [Authorize(Policy = "AdminOnly")]
+    [Authorize(Policy = "AdminOrReceptionist")]
     public class RoomsController : Controller
     {
         private readonly ApplicationDbContext _context;

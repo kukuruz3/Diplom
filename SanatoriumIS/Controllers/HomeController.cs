@@ -44,12 +44,16 @@ namespace SanatoriumIS.Controllers
                     .Include(p => p.Client)
                     .Include(p => p.Procedure)
                     .Include(p => p.ProcedureRoom)
-                    .Where(p => p.ProcedureDate.Date >= DateTime.Today)
+                    .Where(p => p.ProcedureDate.Date >= DateTime.Today && p.Status == "Выполнена")
                     .OrderBy(p => p.ProcedureDate)
                     .ThenBy(p => p.StartTime)
                     .Take(5)
                     .ToListAsync()
             };
+
+            ViewBag.TodayProcedures = await _context.ProcedureAssignments
+                .CountAsync(p => p.ProcedureDate.Date == DateTime.Today && p.Status == "Выполнена");
+
             return View(viewModel);
         }
     }

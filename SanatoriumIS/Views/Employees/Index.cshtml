@@ -96,6 +96,10 @@
                                     </td>
                                     <td class="pe-4 py-3 text-center">
                                         <div class="d-flex gap-2 justify-content-center">
+                                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm px-3 py-1.5 rounded-pill shadow-sm"
+                                               style="background: linear-gradient(135deg, #4a9e6b 0%, #3d8a5c 100%); color: white; border: none;">
+                                                <i class="bi bi-pencil me-1"></i> Изменить
+                                            </a>
                                             <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm px-3 py-1.5 rounded-pill shadow-sm"
                                                style="background: linear-gradient(135deg, #7cb19d 0%, #6b9e8a 100%); color: white; border: none;">
                                                 <i class="bi bi-eye me-1"></i> Детали

@@ -38,13 +38,32 @@
                                 </a>
                             }
 
-                            <!-- График сотрудников - все медицинские сотрудники -->
-                            <a class="nav-link text-white" asp-controller="Employees" asp-action="Schedule">
-                                <i class="bi bi-person-workspace me-1"></i> График сотрудников
-                            </a>
+                            <!-- График сотрудников -->
+                            @if (User.IsInRole("Admin") || User.IsInRole("ReferringDoctor") || User.IsInRole("ExecutingDoctor"))
+                            {
+                                <a class="nav-link text-white" asp-controller="Employees" asp-action="Schedule">
+                                    <i class="bi bi-person-workspace me-1"></i> График сотрудников
+                                </a>
+                            }
 
-                            <!-- Отчёты - Admin, Receptionist, ReferringDoctor -->
-                            @if (User.IsInRole("Admin") || User.IsInRole("Receptionist") || User.IsInRole("ReferringDoctor"))
+                            <!-- Клиенты Receptionist -->
+                            @if (User.IsInRole("Receptionist"))
+                            {
+                                <a class="nav-link text-white" asp-controller="Clients" asp-action="Index">
+                                    <i class="bi bi-people me-1"></i> Клиенты
+                                </a>
+                            }
+
+                            <!-- Бронирования Receptionist -->
+                            @if (User.IsInRole("Receptionist"))
+                            {
+                                <a class="nav-link text-white" asp-controller="Bookings" asp-action="Index">
+                                    <i class="bi bi-calendar-check me-1"></i> Бронирования
+                                </a>
+                            }
+
+                            <!-- Отчёты - Admin -->
+                            @if (User.IsInRole("Admin"))
                             {
                                 <div class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
@@ -63,6 +82,26 @@
                                         </li>
                                     </ul>
                                 </div>
+                            }
+
+                            <!-- Отчет по процедурам -ReferringDoctor -->
+                            @if (User.IsInRole("ReferringDoctor"))
+                            {
+                                <li>
+                                    <a class="nav-link text-white" asp-controller="ProcedureAssignments" asp-action="Report">
+                                        <i class="bi bi-clipboard2-pulse me-2"></i> Отчет по процедурам
+                                    </a>
+                                </li>
+                            }
+
+                            <!-- Отчет по занятости номеров Receptionist -->
+                            @if (User.IsInRole("Receptionist"))
+                            {
+                                <li>
+                                    <a class="nav-link text-white" asp-controller="Rooms" asp-action="OccupancyReport">
+                                        <i class="bi bi-door-closed me-2"></i> Занятость номеров
+                                    </a>
+                                </li>
                             }
 
                             <!-- Модули (CRUD) - только Admin -->
@@ -134,9 +173,6 @@
         </main>
     </div>
 
-    <footer class="border-top mt-4 py-3 text-center text-muted small no-print">
-        <i class="bi bi-tree"></i> Санаторий "Нижне-Ивкино" &copy; @DateTime.Now.Year
-    </footer>
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -389,6 +425,9 @@
             }
 
             function addCurrentTab() {
+            if (currentUrl.includes('/Account/AccessDenied')) {
+            return;
+            }
             let tabs = getTabs();
             const normalizedCurrentUrl = normalizeUrl(currentUrl);
             const existingIndex = tabs.findIndex(t => normalizeUrl(t.url) === normalizedCurrentUrl);
