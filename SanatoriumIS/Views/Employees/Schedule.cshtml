@@ -245,7 +245,16 @@
 
                     <div id="cancelReasonBlock" style="display: none;" class="mt-3">
                         <label class="form-label fw-semibold">Причина отмены:</label>
-                        <textarea id="cancelReason" class="form-control" rows="2" placeholder="Укажите причину отмены..."></textarea>
+                        <select id="cancelReason" class="form-select">
+                            <option value="">-- Выберите причину --</option>
+                            <option value="Клиент отказался">Клиент отказался</option>
+                            <option value="Неявка клиента">Неявка клиента</option>
+                            <option value="Технические причины">Технические причины</option>
+                            <option value="Отсутствие оборудования">Отсутствие оборудования</option>
+                            <option value="Болезнь сотрудника">Болезнь сотрудника</option>
+                            <option value="Ошибка записи">Ошибка записи</option>
+                            <option value="Другое">Другое</option>
+                        </select>
                     </div>
                 }
                 else

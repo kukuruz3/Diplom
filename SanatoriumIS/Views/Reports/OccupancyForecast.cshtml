@@ -1,0 +1,67 @@
+﻿@model List<object>
+@{
+    ViewData["Title"] = "Прогноз загрузки на 30 дней";
+}
+
+<div class="container-fluid px-4 mt-4">
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="px-4 py-3" style="background: linear-gradient(145deg, #2d5a3b 0%, #3d6e4a 100%);">
+            <h2 class="text-white mb-0 fw-bold">
+                <i class="bi bi-graph-up me-2"></i> Прогноз загрузки санатория
+            </h2>
+            <p class="text-white-50 mb-0 mt-1">На ближайшие 30 дней</p>
+        </div>
+        <div class="card-body p-4">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Дата</th>
+                            <th>День недели</th>
+                            <th>Занято номеров</th>
+                            <th>Загрузка</th>
+                            <th>Статус</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (dynamic item in Model)
+                        {
+                            var statusClass = item.OccupancyPercent >= 80 ? "bg-danger" : (item.OccupancyPercent >= 50 ? "bg-warning" : "bg-success");
+                            var statusText = item.OccupancyPercent >= 80 ? "Высокая" : (item.OccupancyPercent >= 50 ? "Средняя" : "Низкая");
+                            <tr>
+                                <td class="fw-bold">@item.Date.ToString("dd.MM.yyyy")</td>
+                                <td>@GetRussianDayOfWeek(item.Date.DayOfWeek)</td>
+                                <td>@item.BookedRooms / @item.TotalRooms</td>
+                                <td style="width: 200px;">
+                                    <div class="progress" style="height: 10px;">
+                                        <div class="progress-bar @statusClass" style="width: @item.OccupancyPercent%"></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge @statusClass bg-opacity-10 text-dark px-3 py-2">@statusText (@item.OccupancyPercent%)</span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetRussianDayOfWeek(DayOfWeek day)
+    {
+        return day switch
+        {
+            DayOfWeek.Monday => "Понедельник",
+            DayOfWeek.Tuesday => "Вторник",
+            DayOfWeek.Wednesday => "Среда",
+            DayOfWeek.Thursday => "Четверг",
+            DayOfWeek.Friday => "Пятница",
+            DayOfWeek.Saturday => "Суббота",
+            DayOfWeek.Sunday => "Воскресенье",
+            _ => ""
+        };
+    }
+}
