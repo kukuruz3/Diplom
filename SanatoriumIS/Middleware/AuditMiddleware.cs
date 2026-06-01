@@ -20,43 +20,54 @@ namespace SanatoriumIS.Middleware
             using var responseBody = new MemoryStream();
             context.Response.Body = responseBody;
 
-            await _next(context);
-
-            // Логируем только успешные POST/PUT/DELETE
-            if (context.Request.Method == "POST" || context.Request.Method == "PUT" || context.Request.Method == "DELETE")
+            try
             {
-                if (context.Response.StatusCode >= 200 && context.Response.StatusCode < 300)
+                await _next(context);
+
+                // Логируем только успешные POST/PUT/DELETE
+                if (context.Request.Method == "POST" || context.Request.Method == "PUT" || context.Request.Method == "DELETE")
                 {
-                    using var scope = scopeFactory.CreateScope();
-                    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-
-                    var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "Anonymous";
-                    var userName = context.User.Identity?.Name ?? "Anonymous";
-
-                    var path = context.Request.Path.ToString();
-                    var method = context.Request.Method;
-
-                    // Получаем ID сущности из URL
-                    var entityId = path.Split('/').LastOrDefault(s => int.TryParse(s, out _));
-
-                    var log = new AuditLog
+                    if (context.Response.StatusCode >= 200 && context.Response.StatusCode < 400)
                     {
-                        UserId = userId,
-                        UserName = userName,
-                        Action = $"{method} {path}",
-                        EntityName = path.Split('/')[^2],
-                        EntityId = entityId,
-                        Timestamp = DateTime.Now
-                    };
+                        try
+                        {
+                            using var scope = scopeFactory.CreateScope();
+                            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-                    await dbContext.AuditLogs.AddAsync(log);
-                    await dbContext.SaveChangesAsync();
+                            var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "Anonymous";
+                            var userName = context.User.Identity?.Name ?? "Anonymous";
+
+                            var path = context.Request.Path.ToString();
+                            var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+                            var entityName = segments.Length >= 2 ? segments[^2] : (segments.Length == 1 ? segments[0] : "Unknown");
+                            var entityId = path.Split('/').LastOrDefault(s => int.TryParse(s, out _));
+
+                            var log = new AuditLog
+                            {
+                                UserId = userId,
+                                UserName = userName,
+                                Action = $"{context.Request.Method} {path}",
+                                EntityName = entityName,
+                                EntityId = entityId,
+                                Timestamp = DateTime.Now
+                            };
+
+                            await dbContext.AuditLogs.AddAsync(log);
+                            await dbContext.SaveChangesAsync();
+                        }
+                        catch
+                        {
+                            // Ошибка логирования не должна ломать основной запрос
+                        }
+                    }
                 }
             }
-
-            responseBody.Seek(0, SeekOrigin.Begin);
-            await responseBody.CopyToAsync(originalBodyStream);
+            finally
+            {
+                responseBody.Seek(0, SeekOrigin.Begin);
+                await responseBody.CopyToAsync(originalBodyStream);
+                context.Response.Body = originalBodyStream;
+            }
         }
     }
 }
