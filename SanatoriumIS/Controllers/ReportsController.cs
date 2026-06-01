@@ -88,44 +88,43 @@ namespace SanatoriumIS.Controllers
                 .Include(p => p.Client)
                 .Include(p => p.Procedure)
                 .Include(p => p.Employee)
-                .Where(p => p.Status == "Отменена" && p.CancelledAt.HasValue && p.CancelledAt.Value.Date >= from.Date && p.CancelledAt.Value.Date <= to.Date)
+                .Where(p => p.Status == "Отменена" &&
+                            p.CancelledAt.HasValue &&
+                            p.CancelledAt.Value.Date >= from.Date &&
+                            p.CancelledAt.Value.Date <= to.Date)
                 .OrderByDescending(p => p.CancelledAt)
                 .ToListAsync();
 
             var modelList = new List<CancelledProcedureViewModel>();
-            var userNames = new Dictionary<string, string>();
 
             foreach (var p in cancelledProcedures)
             {
                 // Получаем имя отменившего
-                string cancelledByName = p.CancelledBy ?? "Неизвестно";
-                if (!string.IsNullOrEmpty(p.CancelledBy) && p.CancelledBy != "Неизвестно")
-                {
-                    if (!userNames.ContainsKey(p.CancelledBy))
-                    {
-                        // Сначала ищем среди сотрудников
-                        var employee = await _context.Employees
-                            .FirstOrDefaultAsync(e => e.IdentityUserId == p.CancelledBy);
+                string cancelledByName = "Неизвестно";
 
-                        if (employee != null)
+                if (!string.IsNullOrEmpty(p.CancelledBy))
+                {
+                    // Сначала ищем среди сотрудников
+                    var employee = await _context.Employees
+                        .FirstOrDefaultAsync(e => e.IdentityUserId == p.CancelledBy);
+
+                    if (employee != null)
+                    {
+                        cancelledByName = employee.FullName;
+                    }
+                    else
+                    {
+                        // Ищем среди пользователей
+                        var user = await _userManager.FindByIdAsync(p.CancelledBy);
+                        if (user != null)
                         {
-                            userNames[p.CancelledBy] = employee.FullName;
+                            cancelledByName = user.FullName ?? user.Email ?? p.CancelledBy;
                         }
                         else
                         {
-                            // Если не нашли среди сотрудников, ищем среди пользователей Identity
-                            var user = await _userManager.FindByIdAsync(p.CancelledBy);
-                            if (user != null)
-                            {
-                                userNames[p.CancelledBy] = user.FullName ?? user.Email ?? p.CancelledBy;
-                            }
-                            else
-                            {
-                                userNames[p.CancelledBy] = p.CancelledBy;
-                            }
+                            cancelledByName = p.CancelledBy;
                         }
                     }
-                    cancelledByName = userNames[p.CancelledBy];
                 }
 
                 modelList.Add(new CancelledProcedureViewModel
@@ -142,8 +141,9 @@ namespace SanatoriumIS.Controllers
                 });
             }
 
-            // Статистика по сотрудникам
+            // Статистика по отменам
             var byEmployeeStats = modelList
+                .Where(p => p.CancelledByName != "Неизвестно")
                 .GroupBy(p => p.CancelledByName)
                 .Select(g => new { EmployeeName = g.Key, Count = g.Count() })
                 .OrderByDescending(g => g.Count)

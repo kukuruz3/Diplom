@@ -1,8 +1,6 @@
 ﻿@model List<SanatoriumIS.ViewModels.CancelledProcedureViewModel>
 @{
     ViewData["Title"] = "Отменённые процедуры";
-    var totalCancelled = ViewBag.TotalCancelled;
-    var byEmployeeStats = ViewBag.ByEmployeeStats as List<dynamic> ?? new List<dynamic>();
 }
 
 <div class="container-fluid px-4 mt-4">
@@ -27,32 +25,28 @@
             @if (Model.Any())
             {
                 <div class="row mb-4">
-                    <div class="col-md-6">
-                        <div class="stat-card p-3 rounded-4 h-100">
-                            <div class="fw-bold mb-3"><i class="bi bi-person-badge me-2"></i> Кто отменял:</div>
-                            @if (byEmployeeStats.Any())
-                            {
-                                foreach (var stat in byEmployeeStats)
-                                {
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span>@stat.EmployeeName</span>
-                                        <span class="badge bg-warning">@stat.Count</span>
-                                    </div>
-                                    <div class="progress mb-2" style="height: 5px;">
-                                        <div class="progress-bar bg-warning" style="width: @((double)stat.Count / totalCancelled * 100)%"></div>
-                                    </div>
-                                }
-                            }
-                            else
-                            {
-                                <p class="text-muted">Нет данных</p>
-                            }
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="stat-card text-center p-3 rounded-4 h-100">
-                            <div class="display-4 fw-bold text-danger">@totalCancelled</div>
-                            <div class="text-muted">всего отмен</div>
+                    <div class="col-md-12">
+                        <div class="stat-card p-3 rounded-4">
+                            <div class="fw-bold mb-3"><i class="bi bi-person-badge me-2"></i> Статистика отмен:</div>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Кто отменил</th>
+                                            <th>Количество</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var group in Model.GroupBy(m => m.CancelledByName).OrderByDescending(g => g.Count()))
+                                        {
+                                            <tr>
+                                                <td>@(string.IsNullOrEmpty(group.Key) ? "Неизвестно" : group.Key)</td>
+                                                <td><span class="badge bg-warning">@group.Count()</span></td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -81,7 +75,7 @@
                                     <td>@item.OriginalDate.ToString("dd.MM.yyyy")</td>
                                     <td>@item.OriginalTime.ToString(@"hh\:mm")</td>
                                     <td>@item.CancelledDate.ToString("dd.MM.yyyy HH:mm")</td>
-                                    <td>@item.CancelledByName</td>
+                                    <td>@(string.IsNullOrEmpty(item.CancelledByName) ? "Неизвестно" : item.CancelledByName)</td>
                                     <td class="text-danger">@item.CancelReason</td>
                                 </tr>
                             }
