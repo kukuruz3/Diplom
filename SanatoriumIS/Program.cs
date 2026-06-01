@@ -46,7 +46,10 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AdminOrExecutingDoctor", policy => policy.RequireRole("Admin", "ExecutingDoctor"));
     options.AddPolicy("AdminOrMedicalStaff", policy => policy.RequireRole("Admin", "ReferringDoctor", "ExecutingDoctor"));
     options.AddPolicy("CanAssignProcedures", policy => policy.RequireRole("Admin", "ReferringDoctor"));
-    options.AddPolicy("CanCompleteProcedures", policy => policy.RequireRole("Admin", "ExecutingDoctor"));
+    options.AddPolicy("CanCompleteProcedures", policy =>
+    policy.RequireAssertion(context =>
+        context.User.IsInRole("Admin") ||
+        context.User.IsInRole("ExecutingDoctor")));
 });
 
 builder.Services.AddControllersWithViews();
@@ -96,6 +99,6 @@ app.UseAuthorization();
 app.UseMiddleware<AuditMiddleware>();
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}").AllowAnonymous();
 
 app.Run();

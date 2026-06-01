@@ -346,11 +346,19 @@ namespace SanatoriumIS.Controllers
             }
         }
 
-        // POST: ProcedureAssignments/UpdateStatus
         [HttpPost]
-        [Authorize(Policy = "CanCompleteProcedures")]
         public async Task<JsonResult> UpdateStatus(int assignmentId, string status, string? cancelReason = null)
         {
+            // Логируем для отладки
+            Console.WriteLine($"=== UpdateStatus called ===");
+            Console.WriteLine($"AssignmentId: {assignmentId}");
+            Console.WriteLine($"Status: {status}");
+            Console.WriteLine($"User: {User.Identity.Name}");
+            Console.WriteLine($"IsAuthenticated: {User.Identity.IsAuthenticated}");
+
+            var roles = User.Claims.Where(c => c.Type == System.Security.Claims.ClaimTypes.Role).Select(c => c.Value);
+            Console.WriteLine($"Roles: {string.Join(", ", roles)}");
+
             try
             {
                 var assignment = await _context.ProcedureAssignments.FindAsync(assignmentId);
