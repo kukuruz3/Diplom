@@ -20,8 +20,6 @@ namespace SanatoriumIS.Models
 
         public string? Details { get; set; }
 
-        public string? IpAddress { get; set; }
-
         public DateTime Timestamp { get; set; } = DateTime.Now;
     }
 }
