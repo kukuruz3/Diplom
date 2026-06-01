@@ -22,6 +22,10 @@ namespace SanatoriumIS.Models
         [Display(Name = "Цена за ночь (₽)")]
         public decimal PricePerNight { get; set; }
 
+        [Display(Name = "Дата начала действия")]
+        [DataType(DataType.Date)]
+        public DateTime ValidFrom { get; set; } = DateTime.Today;
+
         [Display(Name = "Описание")]
         [StringLength(200)]
         public string? Description { get; set; }

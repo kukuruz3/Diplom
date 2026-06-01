@@ -55,7 +55,12 @@
                                 @Model.PricePerNight.ToString("N0") ₽
                             </span>
                         </dd>
-
+                        <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                            <i class="bi bi-calendar3 me-2 text-success"></i> Дата начала действия
+                        </dt>
+                        <dd class="col-sm-8 p-3 mb-2">
+                            @Model.ValidFrom.ToString("dd.MM.yyyy")
+                        </dd>
                         @if (!string.IsNullOrEmpty(Model.Description))
                         {
                             <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">

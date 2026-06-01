@@ -20,6 +20,7 @@ namespace SanatoriumIS.Data
         public DbSet<Employee> Employees { get; set; }
         public DbSet<RoomPrice> RoomPrices { get; set; }
         public DbSet<BookingService> BookingServices { get; set; }
+        public DbSet<AuditLog> AuditLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -85,10 +86,6 @@ namespace SanatoriumIS.Data
 
             builder.Entity<Service>()
                 .HasIndex(s => s.Name)
-                .IsUnique();
-
-            builder.Entity<RoomPrice>()
-                .HasIndex(rp => new { rp.Capacity, rp.Category })
                 .IsUnique();
         }
     }

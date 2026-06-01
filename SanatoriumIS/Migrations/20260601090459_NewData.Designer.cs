@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SanatoriumIS.Data;
 
@@ -11,9 +12,11 @@ using SanatoriumIS.Data;
 namespace SanatoriumIS.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260601090459_NewData")]
+    partial class NewData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -296,17 +299,11 @@ namespace SanatoriumIS.Migrations
                     b.Property<bool>("IsCheckedOut")
                         .HasColumnType("bit");
 
-                    b.Property<decimal>("PricePerNightAtBooking")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<int>("RoomId")
                         .HasColumnType("int");
 
                     b.Property<int?>("SecondClientId")
                         .HasColumnType("int");
-
-                    b.Property<decimal>("TotalPrice")
-                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
@@ -627,10 +624,10 @@ namespace SanatoriumIS.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<DateTime>("ValidFrom")
-                        .HasColumnType("datetime2");
-
                     b.HasKey("Id");
+
+                    b.HasIndex("Capacity", "Category")
+                        .IsUnique();
 
                     b.ToTable("RoomPrices");
                 });

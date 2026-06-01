@@ -198,6 +198,9 @@
                 <p>Новый пароль для сотрудника <strong id="resetEmployeeName"></strong>:</p>
                 <div class="alert alert-success text-center">
                     <code id="resetPassword" style="font-size: 18px; font-weight: bold;"></code>
+                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="copyResetPasswordBtn">
+                        <i class="bi bi-clipboard"></i> Копировать
+                    </button>
                 </div>
                 <p class="text-muted small mb-0">
                     <i class="bi bi-info-circle me-1"></i>
@@ -236,6 +239,16 @@
         // Копирование пароля при создании сотрудника
         $('#copyNewPasswordBtn').on('click', function() {
             const password = $('#newEmployeePassword').text();
+            navigator.clipboard.writeText(password).then(function() {
+                alert('Пароль скопирован в буфер обмена');
+            }).catch(function() {
+                alert('Не удалось скопировать пароль');
+            });
+        });
+
+        // Копирование пароля при сбросе
+        $('#copyResetPasswordBtn').on('click', function() {
+            const password = $('#resetPassword').text();
             navigator.clipboard.writeText(password).then(function() {
                 alert('Пароль скопирован в буфер обмена');
             }).catch(function() {

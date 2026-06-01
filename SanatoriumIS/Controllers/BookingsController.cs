@@ -209,6 +209,28 @@ namespace SanatoriumIS.Controllers
 
             if (ModelState.IsValid)
             {
+                // РАСЧЁТ ЦЕНЫ ПО ДНЯМ
+                decimal totalPrice = 0;
+                var currentDate = booking.CheckIn;
+                var priceDetails = new List<string>();
+
+                while (currentDate < booking.CheckOut)
+                {
+                    var dayPrice = await _context.RoomPrices
+                        .Where(rp => rp.Capacity == room.Capacity &&
+                                     rp.Category == room.Category &&
+                                     rp.ValidFrom.Date <= currentDate.Date)
+                        .OrderByDescending(rp => rp.ValidFrom)
+                        .Select(rp => rp.PricePerNight)
+                        .FirstOrDefaultAsync();
+
+                    totalPrice += dayPrice;
+                    currentDate = currentDate.AddDays(1);
+                }
+
+                booking.TotalPrice = totalPrice;
+                booking.PricePerNightAtBooking = totalPrice / (booking.CheckOut - booking.CheckIn).Days;
+
                 _context.Add(booking);
                 await _context.SaveChangesAsync();
 

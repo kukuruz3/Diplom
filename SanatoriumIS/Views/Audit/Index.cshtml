@@ -1,0 +1,81 @@
+﻿@model List<SanatoriumIS.Models.AuditLog>
+@{
+    ViewData["Title"] = "Журнал действий";
+}
+
+<div class="container-fluid px-4 mt-4">
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="px-4 py-3" style="background: linear-gradient(145deg, #2d5a3b 0%, #3d6e4a 100%);">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <h2 class="text-white mb-0 fw-bold">
+                        <i class="bi bi-journal-bookmark-fill me-2"></i> Журнал действий
+                    </h2>
+                    <p class="text-white-50 mb-0 mt-1">Аудит всех изменений в системе</p>
+                </div>
+                <form method="get" class="d-flex gap-2">
+                    <input type="date" name="from" class="form-control rounded-pill" value="@ViewBag.From" style="width: 150px;">
+                    <span class="align-self-center text-white">—</span>
+                    <input type="date" name="to" class="form-control rounded-pill" value="@ViewBag.To" style="width: 150px;">
+                    <button type="submit" class="btn btn-light rounded-pill px-4">Фильтр</button>
+                </form>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead style="background-color: #f8f9fc; border-bottom: 2px solid #e9ecef;">
+                        <tr>
+                            <th class="ps-4 py-3 fw-semibold" style="color: #2d5a3b; width: 160px;">Время</th>
+                            <th class="py-3 fw-semibold" style="color: #2d5a3b; width: 200px;">Пользователь</th>
+                            <th class="py-3 fw-semibold" style="color: #2d5a3b;">Действие</th>
+                            <th class="py-3 fw-semibold" style="color: #2d5a3b; width: 120px;">Сущность</th>
+                            <th class="pe-4 py-3 text-center fw-semibold" style="color: #2d5a3b; width: 80px;">ID</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var log in Model)
+                        {
+                            <tr style="border-bottom: 1px solid #f0f2f5;">
+                                <td class="ps-4 py-3">
+                                    <i class="bi bi-clock text-secondary me-1"></i>
+                                    <span class="fw-medium">@log.Timestamp.ToString("dd.MM.yyyy HH:mm:ss")</span>
+                                </td>
+                                <td class="py-3">
+                                    <i class="bi bi-person-circle text-success me-2"></i>
+                                    @log.UserName
+                                </td>
+                                <td class="py-3">
+                                    @{
+                                        var actionClass = log.Action.Contains("DELETE") ? "text-danger" : (log.Action.Contains("POST") ? "text-success" : "text-primary");
+                                    }
+                                    <span class="@actionClass">
+                                        <i class="bi @(log.Action.Contains("DELETE") ? "bi-trash" : (log.Action.Contains("POST") ? "bi-plus-circle" : "bi-pencil")) me-1"></i>
+                                        @log.Action
+                                    </span>
+                                </td>
+                                <td class="py-3">
+                                    <span class="badge bg-light text-dark px-3 py-2 rounded-pill">
+                                        <i class="bi bi-tag me-1"></i> @log.EntityName
+                                    </span>
+                                </td>
+                                <td class="pe-4 py-3 text-center">
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2 rounded-pill">
+                                        #@log.EntityId
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table tbody tr:hover {
+        background-color: #f8f9fc;
+        transition: all 0.2s;
+    }
+</style>

@@ -140,6 +140,19 @@ namespace SanatoriumIS.Controllers
                 }
             }
 
+            // ПРОВЕРКА: если включён доступ в систему, то Email и SystemRole обязательны
+            if (employee.HasSystemAccess)
+            {
+                if (string.IsNullOrWhiteSpace(employee.Email))
+                {
+                    ModelState.AddModelError("Email", "Для доступа в систему необходимо указать Email");
+                }
+                if (string.IsNullOrWhiteSpace(employee.SystemRole))
+                {
+                    ModelState.AddModelError("SystemRole", "Для доступа в систему необходимо выбрать роль");
+                }
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Add(employee);
@@ -155,7 +168,6 @@ namespace SanatoriumIS.Controllers
 
                 if (tempPassword != null)
                 {
-                    // Сохраняем данные в TempData для показа модального окна после редиректа
                     TempData["ShowPasswordModal"] = "true";
                     TempData["NewPassword"] = tempPassword;
                     TempData["NewEmployeeName"] = employee.FullName;
@@ -301,6 +313,19 @@ namespace SanatoriumIS.Controllers
                 }
             }
 
+            // ПРОВЕРКА: если включён доступ в систему, то Email и SystemRole обязательны
+            if (employee.HasSystemAccess)
+            {
+                if (string.IsNullOrWhiteSpace(employee.Email))
+                {
+                    ModelState.AddModelError("Email", "Для доступа в систему необходимо указать Email");
+                }
+                if (string.IsNullOrWhiteSpace(employee.SystemRole))
+                {
+                    ModelState.AddModelError("SystemRole", "Для доступа в систему необходимо выбрать роль");
+                }
+            }
+
             if (ModelState.IsValid)
             {
                 try
@@ -340,26 +365,26 @@ namespace SanatoriumIS.Controllers
 
             // Перезагружаем ViewBag при ошибке
             var positions = new List<SelectListItem>
-            {
-                new SelectListItem { Value = "Главный врач", Text = "Главный врач" },
-                new SelectListItem { Value = "Врач терапевт", Text = "Врач терапевт" },
-                new SelectListItem { Value = "Врач физиотерапевт", Text = "Врач физиотерапевт" },
-                new SelectListItem { Value = "Врач реабилитолог", Text = "Врач реабилитолог" },
-                new SelectListItem { Value = "Массажист", Text = "Массажист" },
-                new SelectListItem { Value = "Инструктор ЛФК", Text = "Инструктор ЛФК" },
-                new SelectListItem { Value = "Регистратор", Text = "Регистратор" },
-                new SelectListItem { Value = "Администратор", Text = "Администратор" }
-            };
+    {
+        new SelectListItem { Value = "Главный врач", Text = "Главный врач" },
+        new SelectListItem { Value = "Врач терапевт", Text = "Врач терапевт" },
+        new SelectListItem { Value = "Врач физиотерапевт", Text = "Врач физиотерапевт" },
+        new SelectListItem { Value = "Врач реабилитолог", Text = "Врач реабилитолог" },
+        new SelectListItem { Value = "Массажист", Text = "Массажист" },
+        new SelectListItem { Value = "Инструктор ЛФК", Text = "Инструктор ЛФК" },
+        new SelectListItem { Value = "Регистратор", Text = "Регистратор" },
+        new SelectListItem { Value = "Администратор", Text = "Администратор" }
+    };
             ViewBag.Positions = new SelectList(positions, "Value", "Text");
 
             var specializations = new List<SelectListItem>
-            {
-                new SelectListItem { Value = "Терапия", Text = "Терапия" },
-                new SelectListItem { Value = "Физиотерапия", Text = "Физиотерапия" },
-                new SelectListItem { Value = "Массаж", Text = "Массаж" },
-                new SelectListItem { Value = "ЛФК", Text = "ЛФК" },
-                new SelectListItem { Value = "Реабилитология", Text = "Реабилитология" }
-            };
+    {
+        new SelectListItem { Value = "Терапия", Text = "Терапия" },
+        new SelectListItem { Value = "Физиотерапия", Text = "Физиотерапия" },
+        new SelectListItem { Value = "Массаж", Text = "Массаж" },
+        new SelectListItem { Value = "ЛФК", Text = "ЛФК" },
+        new SelectListItem { Value = "Реабилитология", Text = "Реабилитология" }
+    };
             ViewBag.Specializations = new SelectList(specializations, "Value", "Text");
 
             var rooms = await _context.ProcedureRooms
@@ -372,12 +397,12 @@ namespace SanatoriumIS.Controllers
             ViewBag.ProcedureRoomId = new SelectList(rooms, "Id", "DisplayName", employee.ProcedureRoomId);
 
             var roles = new List<SelectListItem>
-            {
-                new SelectListItem { Value = "Admin", Text = "Администратор" },
-                new SelectListItem { Value = "Receptionist", Text = "Регистратор" },
-                new SelectListItem { Value = "ReferringDoctor", Text = "Врач-терапевт (назначающий)" },
-                new SelectListItem { Value = "ExecutingDoctor", Text = "Врач-специалист (исполняющий)" }
-            };
+    {
+        new SelectListItem { Value = "Admin", Text = "Администратор" },
+        new SelectListItem { Value = "Receptionist", Text = "Регистратор" },
+        new SelectListItem { Value = "ReferringDoctor", Text = "Врач-терапевт (назначающий)" },
+        new SelectListItem { Value = "ExecutingDoctor", Text = "Врач-специалист (исполняющий)" }
+    };
             ViewBag.SystemRoles = new SelectList(roles, "Value", "Text", employee.SystemRole);
 
             return View(employee);

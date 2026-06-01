@@ -34,16 +34,28 @@ namespace SanatoriumIS.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Capacity,Category,PricePerNight,Description")] RoomPrice roomPrice)
+        public async Task<IActionResult> Create([Bind("Id,Capacity,Category,PricePerNight,ValidFrom,Description")] RoomPrice roomPrice)
         {
-            if (await _context.RoomPrices.AnyAsync(p => p.Capacity == roomPrice.Capacity && p.Category == roomPrice.Category))
-                ModelState.AddModelError("", $"Цена для {roomPrice.Capacity}-местного номера категории '{roomPrice.Category}' уже существует.");
-
             if (ModelState.IsValid)
             {
                 _context.Add(roomPrice);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (DbUpdateException ex)
+                {
+                    var innerEx = ex.InnerException;
+                    if (innerEx != null && innerEx.Message.Contains("UNIQUE"))
+                    {
+                        ModelState.AddModelError("", "Цена для такой категории и вместимости уже существует. Отредактируйте существующую цену или измените дату начала действия.");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("", "Ошибка при сохранении: " + innerEx?.Message);
+                    }
+                }
             }
             return View(roomPrice);
         }
@@ -58,12 +70,9 @@ namespace SanatoriumIS.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Capacity,Category,PricePerNight,Description")] RoomPrice roomPrice)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Capacity,Category,PricePerNight,ValidFrom,Description")] RoomPrice roomPrice)
         {
             if (id != roomPrice.Id) return NotFound();
-
-            if (await _context.RoomPrices.AnyAsync(p => p.Capacity == roomPrice.Capacity && p.Category == roomPrice.Category && p.Id != roomPrice.Id))
-                ModelState.AddModelError("", $"Цена для {roomPrice.Capacity}-местного номера категории '{roomPrice.Category}' уже существует.");
 
             if (ModelState.IsValid)
             {
@@ -101,9 +110,15 @@ namespace SanatoriumIS.Controllers
         }
 
         [HttpGet]
-        public async Task<JsonResult> GetPrice(int capacity, string category)
+        public async Task<JsonResult> GetPrice(int capacity, string category, DateTime? date)
         {
-            var price = await _context.RoomPrices.FirstOrDefaultAsync(p => p.Capacity == capacity && p.Category == category);
+            var targetDate = date ?? DateTime.Today;
+
+            var price = await _context.RoomPrices
+                .Where(p => p.Capacity == capacity && p.Category == category && p.ValidFrom.Date <= targetDate.Date)
+                .OrderByDescending(p => p.ValidFrom)
+                .FirstOrDefaultAsync();
+
             if (price != null) return Json(new { success = true, price = price.PricePerNight });
             return Json(new { success = false, price = 0 });
         }

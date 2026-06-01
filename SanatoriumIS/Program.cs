@@ -1,7 +1,8 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using SanatoriumIS.Data;
+using SanatoriumIS.Middleware;
 using SanatoriumIS.Models;
 using SanatoriumIS.Services;
 
@@ -92,7 +93,7 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.UseMiddleware<AuditMiddleware>();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

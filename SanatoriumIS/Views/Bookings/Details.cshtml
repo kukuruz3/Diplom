@@ -4,12 +4,28 @@
 
 @{
     ViewData["Title"] = "Детали бронирования";
+    var nights = (Model.CheckOut - Model.CheckIn).Days;
+    var totalPrice = Model.TotalPrice;
+    var pricePerNight = Model.PricePerNightAtBooking;
 
-    SanatoriumIS.Models.RoomPrice roomPrice = null;
-    if (Model.Room != null)
+    // Если цена не сохранена (старые бронирования) - рассчитываем по дням
+    if (totalPrice == 0 && Model.Room != null)
     {
-        roomPrice = await _context.RoomPrices
-            .FirstOrDefaultAsync(p => p.Capacity == Model.Room.Capacity && p.Category == Model.Room.Category);
+        var currentDate = Model.CheckIn;
+        while (currentDate < Model.CheckOut)
+        {
+            var dayPrice = await _context.RoomPrices
+                .Where(rp => rp.Capacity == Model.Room.Capacity &&
+                             rp.Category == Model.Room.Category &&
+                             rp.ValidFrom.Date <= currentDate.Date)
+                .OrderByDescending(rp => rp.ValidFrom)
+                .Select(rp => rp.PricePerNight)
+                .FirstOrDefaultAsync();
+
+            totalPrice += dayPrice;
+            currentDate = currentDate.AddDays(1);
+        }
+        pricePerNight = nights > 0 ? totalPrice / nights : 0;
     }
 }
 
@@ -39,7 +55,7 @@
                                 <strong>@Model.Client?.FullName</strong>
                             </dd>
 
-                            @if (Model.SecondClient != null)
+                            if (Model.SecondClient != null)
                             {
                                 <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
                                     <i class="bi bi-person me-2 text-info"></i> Второй клиент
@@ -136,14 +152,11 @@
                             <i class="bi bi-clock me-2 text-primary"></i> Количество дней
                         </dt>
                         <dd class="col-sm-8 p-3 mb-2">
-                            <span class="fw-bold text-success fs-4">
-                                @((Model.CheckOut - Model.CheckIn).Days)
-                            </span>
+                            <span class="fw-bold text-success fs-4">@nights</span>
                         </dd>
 
-                        @if (roomPrice != null)
+                        @if (totalPrice > 0)
                         {
-                            var totalPrice = roomPrice.PricePerNight * (Model.CheckOut - Model.CheckIn).Days;
                             <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
                                 <i class="bi bi-currency-ruble me-2 text-success"></i> Стоимость проживания
                             </dt>
@@ -152,9 +165,17 @@
                                     @totalPrice.ToString("N0") ₽
                                 </span>
                                 <br />
-                                <small class="text-muted">
-                                    (@roomPrice.PricePerNight.ToString("N0") ₽/ночь × @((Model.CheckOut - Model.CheckIn).Days))
-                                </small>
+                            </dd>
+                        }
+                        else if (Model.TotalPrice == 0 && Model.PricePerNightAtBooking == 0)
+                        {
+                            <dt class="col-sm-4 bg-light p-3 rounded mb-2 fw-semibold">
+                                <i class="bi bi-currency-ruble me-2 text-success"></i> Стоимость проживания
+                            </dt>
+                            <dd class="col-sm-8 p-3 mb-2">
+                                <span class="text-warning">
+                                    <i class="bi bi-exclamation-triangle me-1"></i> Цена не установлена для данной категории номера
+                                </span>
                             </dd>
                         }
                     </dl>

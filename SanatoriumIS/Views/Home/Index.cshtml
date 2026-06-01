@@ -1,625 +1,549 @@
 ﻿@model SanatoriumIS.ViewModels.DashboardViewModel
-
 @{
-    ViewData["Title"] = "Панель управления";
-    var occupancyRate = Model.RoomsCount > 0 ? (float)(Model.RoomsCount - Model.FreeRoomsCount) / Model.RoomsCount * 100 : 0;
-    var bookingRate = Model.BookingsCount > 0 ? Model.BookingsCount * 5 : 0;
-    bookingRate = bookingRate > 100 ? 100 : bookingRate;
+	ViewData["Title"] = "Панель управления";
+	var occupancyRate = Model.RoomsCount > 0 ? (float)(Model.RoomsCount - Model.FreeRoomsCount) / Model.RoomsCount * 100 : 0;
+	var bookingRate = Model.BookingsCount > 0 ? Model.BookingsCount * 5 : 0;
+	bookingRate = bookingRate > 100 ? 100 : bookingRate;
 }
 
+<!-- Добавляем Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <div class="dashboard-container">
-    <!-- Герой-секция -->
-    <div class="hero-section mb-5">
-        <div class="hero-content">
-            <div class="hero-badge">
-                <i class="bi bi-shield-check"></i> Система управления
-            </div>
-            <h1 class="hero-title">
-                Санаторий<br>
-                <span class="text-gradient">"Нижне-Ивкино"</span>
-            </h1>
-            <p class="hero-subtitle">
-                Управляйте бронированиями, процедурами и клиентами в одном месте
-            </p>
-        </div>
-        <div class="hero-decoration">
-            <div class="floating-icon icon-1">
-                <i class="bi bi-tree-fill"></i>
-            </div>
-            <div class="floating-icon icon-2">
-                <i class="bi bi-heart-pulse"></i>
-            </div>
-            <div class="floating-icon icon-3">
-                <i class="bi bi-calendar-check"></i>
-            </div>
-        </div>
-    </div>
+	<!-- Герой-секция (видят все) -->
+	<div class="hero-section mb-5">
+		<div class="hero-content">
+			<div class="hero-badge">
+				<i class="bi bi-shield-check"></i> Система управления
+			</div>
+			<h1 class="hero-title">
+				Санаторий<br>
+				<span class="text-gradient">"Нижне-Ивкино"</span>
+			</h1>
+			<p class="hero-subtitle">
+				Управляйте бронированиями, процедурами и клиентами в одном месте
+			</p>
+		</div>
+		<div class="hero-decoration">
+			<div class="floating-icon icon-1"><i class="bi bi-tree-fill"></i></div>
+			<div class="floating-icon icon-2"><i class="bi bi-heart-pulse"></i></div>
+			<div class="floating-icon icon-3"><i class="bi bi-calendar-check"></i></div>
+		</div>
+	</div>
 
-    <!-- Ключевые метрики -->
-    <div class="metrics-grid mb-5">
-        <div class="metric-card" data-value="@occupancyRate">
-            <div class="metric-icon">
-                <i class="bi bi-building"></i>
-            </div>
-            <div class="metric-info">
-                <div class="metric-value">@occupancyRate.ToString("F0")<span>%</span></div>
-                <div class="metric-label">Загрузка номеров</div>
-            </div>
-            <div class="metric-progress">
-                <div class="progress-bar-fill" style="width: @occupancyRate%"></div>
-            </div>
-        </div>
+	<!-- Ключевые метрики (видят все) -->
+	<div class="metrics-grid mb-5">
+		<div class="metric-card">
+			<div class="metric-icon"><i class="bi bi-building"></i></div>
+			<div class="metric-info">
+				<div class="metric-value">@ViewBag.OccupancyPercent<span>%</span></div>
+				<div class="metric-label">Загрузка номеров</div>
+			</div>
+			<div class="metric-progress"><div class="progress-bar-fill" style="width: @ViewBag.OccupancyPercent%"></div></div>
+		</div>
+		<div class="metric-card">
+			<div class="metric-icon"><i class="bi bi-calendar-week"></i></div>
+			<div class="metric-info">
+				<div class="metric-value">@Model.BookingsCount</div>
+				<div class="metric-label">Активных бронирований</div>
+			</div>
+			<div class="metric-progress"><div class="progress-bar-fill" style="width: @bookingRate%"></div></div>
+		</div>
+		<div class="metric-card">
+			<div class="metric-icon"><i class="bi bi-people"></i></div>
+			<div class="metric-info">
+				<div class="metric-value">@ViewBag.AvailableRooms</div>
+				<div class="metric-label">Свободных номеров</div>
+			</div>
+			<div class="metric-progress"><div class="progress-bar-fill" style="width: @((float)ViewBag.AvailableRooms / ViewBag.TotalRooms * 100)%; background: #4caf50;"></div></div>
+		</div>
+	</div>
 
-        <div class="metric-card" data-value="@bookingRate">
-            <div class="metric-icon">
-                <i class="bi bi-calendar-week"></i>
-            </div>
-            <div class="metric-info">
-                <div class="metric-value">@Model.BookingsCount</div>
-                <div class="metric-label">Активных бронирований</div>
-            </div>
-            <div class="metric-progress">
-                <div class="progress-bar-fill" style="width: @bookingRate%"></div>
-            </div>
-        </div>
+	@if (User.IsInRole("Admin"))
+	{
+		<div class="row g-4 mb-5">
+			<div class="col-md-6">
+				<div class="activity-card">
+					<div class="activity-header">
+						<h3><i class="bi bi-graph-up"></i> Занятость номеров (7 дней)</h3>
+					</div>
+					<canvas id="bookingsChart" height="200"></canvas>
+				</div>
+			</div>
+			<div class="col-md-6">
+				<div class="activity-card">
+					<div class="activity-header">
+						<h3><i class="bi bi-heart-pulse"></i> Выполненные процедуры (7 дней)</h3>
+					</div>
+					<canvas id="proceduresChart" height="200"></canvas>
+				</div>
+			</div>
+		</div>
+	}
+	<!-- Быстрый доступ (в зависимости от роли) -->
+	<div class="quick-access-section mb-5">
+		<h2 class="section-title"><i class="bi bi-lightning-charge"></i> Быстрый доступ</h2>
+		<div class="quick-grid">
+			@if (User.IsInRole("Admin") || User.IsInRole("ReferringDoctor"))
+			{
+				<a href="/ProcedureAssignments" class="quick-card quick-card-primary">
+					<div class="quick-card-icon"><i class="bi bi-calendar-week"></i></div>
+					<div class="quick-card-info"><h3>Назначение процедур</h3><p>Визуальное расписание</p></div>
+					<div class="quick-card-arrow"><i class="bi bi-arrow-right"></i></div>
+				</a>
+			}
+			@if (User.IsInRole("Admin") || User.IsInRole("Receptionist"))
+			{
+				<a href="/Bookings/Create" class="quick-card quick-card-success">
+					<div class="quick-card-icon"><i class="bi bi-plus-circle"></i></div>
+					<div class="quick-card-info"><h3>Новое бронирование</h3><p>Забронировать номер</p></div>
+					<div class="quick-card-arrow"><i class="bi bi-arrow-right"></i></div>
+				</a>
+				<a href="/Clients/Create" class="quick-card quick-card-info">
+					<div class="quick-card-icon"><i class="bi bi-person-plus"></i></div>
+					<div class="quick-card-info"><h3>Добавить клиента</h3><p>Новый клиент в систему</p></div>
+					<div class="quick-card-arrow"><i class="bi bi-arrow-right"></i></div>
+				</a>
+			}
+			@if (User.IsInRole("Admin") || User.IsInRole("ExecutingDoctor"))
+			{
+				<a href="/Employees/Schedule" class="quick-card" style="border-left: 4px solid #9c27b0;">
+					<div class="quick-card-icon" style="background: #f3e5f5; color: #9c27b0;"><i class="bi bi-person-workspace"></i></div>
+					<div class="quick-card-info"><h3>Мой график</h3><p>Просмотр расписания</p></div>
+					<div class="quick-card-arrow"><i class="bi bi-arrow-right"></i></div>
+				</a>
+			}
+		</div>
+	</div>
 
-        <div class="metric-card">
-            <div class="metric-icon">
-                <i class="bi bi-people"></i>
-            </div>
-            <div class="metric-info">
-                <div class="metric-value">@Model.FreeRoomsCount</div>
-                <div class="metric-label">Свободных номеров</div>
-            </div>
-            <div class="metric-progress">
-                <div class="progress-bar-fill" style="width: @((float)Model.FreeRoomsCount / Model.RoomsCount * 100)%; background: #4caf50;"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Быстрый доступ -->
-    <div class="quick-access-section mb-5">
-        <h2 class="section-title">
-            <i class="bi bi-lightning-charge"></i> Быстрый доступ
-        </h2>
-        <div class="quick-grid">
-            <a href="/ProcedureAssignments" class="quick-card quick-card-primary">
-                <div class="quick-card-icon">
-                    <i class="bi bi-calendar-week"></i>
-                </div>
-                <div class="quick-card-info">
-                    <h3>Назначение процедур</h3>
-                    <p>Визуальное расписание</p>
-                </div>
-                <div class="quick-card-arrow">
-                    <i class="bi bi-arrow-right"></i>
-                </div>
-            </a>
-
-            <a href="/Bookings/Create" class="quick-card quick-card-success">
-                <div class="quick-card-icon">
-                    <i class="bi bi-plus-circle"></i>
-                </div>
-                <div class="quick-card-info">
-                    <h3>Новое бронирование</h3>
-                    <p>Забронировать номер</p>
-                </div>
-                <div class="quick-card-arrow">
-                    <i class="bi bi-arrow-right"></i>
-                </div>
-            </a>
-
-            <a href="/Clients/Create" class="quick-card quick-card-info">
-                <div class="quick-card-icon">
-                    <i class="bi bi-person-plus"></i>
-                </div>
-                <div class="quick-card-info">
-                    <h3>Добавить клиента</h3>
-                    <p>Новый клиент в систему</p>
-                </div>
-                <div class="quick-card-arrow">
-                    <i class="bi bi-arrow-right"></i>
-                </div>
-            </a>
-        </div>
-    </div>
-
-    <!-- Активность и статистика -->
-    <div class="activity-section">
-        <div class="row g-4">
-            <div class="col-lg-6">
-                <div class="activity-card">
-                    <div class="activity-header">
-                        <h3><i class="bi bi-clock-history"></i> Последняя активность</h3>
-                        <span class="badge bg-success bg-opacity-10 text-success">Обновлено сейчас</span>
-                    </div>
-                    <div class="activity-timeline">
-                        @if (Model.UpcomingBookings.Any() || Model.RecentProcedures.Any())
-                        {
-                            @foreach (var booking in Model.UpcomingBookings.Take(3))
-                            {
-                                <div class="timeline-item">
-                                    <div class="timeline-dot"></div>
-                                    <div class="timeline-content">
-                                        <div class="timeline-title">
-                                            <strong>📅 Новое бронирование</strong>
-                                            <span class="timeline-time">@booking.CheckIn.ToString("dd.MM")</span>
-                                        </div>
-                                        <div class="timeline-desc">
-                                            @booking.Client?.FullName забронировал номер @booking.Room?.Number
-                                            на @((booking.CheckOut - booking.CheckIn).Days) ночей
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-                            @foreach (var proc in Model.RecentProcedures.Take(3))
-                            {
-                                <div class="timeline-item">
-                                    <div class="timeline-dot" style="background: #4caf50;"></div>
-                                    <div class="timeline-content">
-                                        <div class="timeline-title">
-                                            <strong>✅ Выполнена процедура</strong>
-                                            <span class="timeline-time">@proc.ProcedureDate.ToString("dd.MM")</span>
-                                        </div>
-                                        <div class="timeline-desc">
-                                            @proc.Client?.FullName - @proc.Procedure?.Name
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-                        }
-                        else
-                        {
-                            <div class="empty-state">
-                                <i class="bi bi-inbox"></i>
-                                <p>Нет недавней активности</p>
-                            </div>
-                        }
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-6">
-                <div class="activity-card">
-                    <div class="activity-header">
-                        <h3><i class="bi bi-bar-chart-steps"></i> Ключевые показатели</h3>
-                    </div>
-                    <div class="kpi-list">
-                        <div class="kpi-item">
-                            <div class="kpi-label">
-                                <i class="bi bi-door-closed"></i>
-                                <span>Занятость номеров</span>
-                            </div>
-                            <div class="kpi-value">@occupancyRate.ToString("F0")%</div>
-                        </div>
-                        <div class="kpi-item">
-                            <div class="kpi-label">
-                                <i class="bi bi-heart-pulse"></i>
-                                <span>Сегодня процедур</span>
-                            </div>
-                            <div class="kpi-value">@ViewBag.TodayProcedures</div>
-                        </div>
-                        <div class="kpi-item">
-                            <div class="kpi-label">
-                                <i class="bi bi-people"></i>
-                                <span>Средняя загрузка</span>
-                            </div>
-                            <div class="kpi-value">@(((float)Model.BookingsCount / 30 * 100).ToString("F0"))%</div>
-                        </div>
-                        <div class="kpi-item">
-                            <div class="kpi-label">
-                                <i class="bi bi-calendar-range"></i>
-                                <span>Активных броней</span>
-                            </div>
-                            <div class="kpi-value">@Model.BookingsCount</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+	@if (User.IsInRole("Admin"))
+	{
+	<div class="activity-section">
+		<div class="row g-4">
+			<div class="col-lg-6">
+				<div class="activity-card">
+					<div class="activity-header">
+						<h3><i class="bi bi-clock-history"></i> Последняя активность</h3>
+					</div>
+					<div class="activity-timeline">
+						@foreach (var booking in Model.UpcomingBookings.Take(3))
+						{
+							<div class="timeline-item">
+								<div class="timeline-dot"></div>
+								<div class="timeline-content">
+									<div class="timeline-title">
+										<strong>Новое бронирование</strong>
+										<span class="timeline-time">@booking.CheckIn.ToString("dd.MM")</span>
+									</div>
+									<div class="timeline-desc">@booking.Client?.FullName забронировал номер @booking.Room?.Number</div>
+								</div>
+							</div>
+						}
+						@foreach (var proc in Model.RecentProcedures.Take(3))
+						{
+							<div class="timeline-item">
+								<div class="timeline-dot" style="background: #4caf50;"></div>
+								<div class="timeline-content">
+									<div class="timeline-title">
+										<strong>Выполнена процедура</strong>
+										<span class="timeline-time">@proc.ProcedureDate.ToString("dd.MM")</span>
+									</div>
+									<div class="timeline-desc">@proc.Client?.FullName - @proc.Procedure?.Name</div>
+								</div>
+							</div>
+						}
+						@if (!Model.UpcomingBookings.Any() && !Model.RecentProcedures.Any())
+						{
+							<div class="empty-state"><i class="bi bi-inbox"></i><p>Нет недавней активности</p></div>
+						}
+					</div>
+				</div>
+			</div>
+			<div class="col-lg-6">
+				<div class="activity-card">
+					<div class="activity-header">
+						<h3><i class="bi bi-bar-chart-steps"></i> Ключевые показатели</h3>
+					</div>
+					<div class="kpi-list">
+						<div class="kpi-item">
+							<div class="kpi-label"><i class="bi bi-door-closed"></i><span>Занятость номеров</span></div>
+							<div class="kpi-value">@ViewBag.OccupancyPercent%</div>
+						</div>
+						<div class="kpi-item">
+							<div class="kpi-label"><i class="bi bi-heart-pulse"></i><span>Сегодня процедур</span></div>
+							<div class="kpi-value">@ViewBag.TodayProcedures</div>
+						</div>
+						<div class="kpi-item"><div class="kpi-label"><i class="bi bi-people"></i><span>Свободных номеров</span></div><div class="kpi-value">@ViewBag.AvailableRooms</div></div>
+						<div class="kpi-item"><div class="kpi-label"><i class="bi bi-calendar-range"></i><span>Активных броней</span></div><div class="kpi-value">@Model.BookingsCount</div></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	}
 </div>
 
+<script>
+	const bookingsCtx = document.getElementById('bookingsChart')?.getContext('2d');
+	if (bookingsCtx) {
+	new Chart(bookingsCtx, {
+	type: 'line',
+	data: {
+	labels: @Html.Raw(Json.Serialize(((List<object>)ViewBag.BookingsByDay).Select(b => ((dynamic)b).Date))),
+	datasets: [{
+	label: 'Занято номеров',
+	data: @Html.Raw(Json.Serialize(((List<object>)ViewBag.BookingsByDay).Select(b => ((dynamic)b).Count))),
+	borderColor: '#2d5a3b',
+	backgroundColor: 'rgba(45, 90, 59, 0.1)',
+	tension: 0.4,
+	fill: true
+	}]
+	}
+	});
+	}
+
+	const proceduresCtx = document.getElementById('proceduresChart')?.getContext('2d');
+	if (proceduresCtx) {
+	new Chart(proceduresCtx, {
+	type: 'bar',
+	data: {
+	labels: @Html.Raw(Json.Serialize(((List<object>)ViewBag.ProceduresByDay).Select(p => ((dynamic)p).Date))),
+	datasets: [{
+	label: 'Выполнено процедур',
+	data: @Html.Raw(Json.Serialize(((List<object>)ViewBag.ProceduresByDay).Select(p => ((dynamic)p).Count))),
+	backgroundColor: '#4caf50',
+	borderRadius: 8
+	}]
+	}
+	});
+	}
+</script>
+
 <style>
-    .dashboard-container {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 20px;
-    }
+	.dashboard-container {
+	max-width: 1400px;
+	margin: 0 auto;
+	padding: 20px;
+	}
 
-    /* Hero Section */
-    .hero-section {
-        background: linear-gradient(135deg, #f8f9fc 0%, #edf4ef 100%);
-        border-radius: 32px;
-        padding: 48px;
-        position: relative;
-        overflow: hidden;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 30px;
-    }
+	.hero-section {
+	background: linear-gradient(135deg, #f8f9fc 0%, #edf4ef 100%);
+	border-radius: 32px;
+	padding: 48px;
+	position: relative;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-wrap: wrap;
+	}
 
-    .hero-badge {
-        background: rgba(47, 94, 65, 0.1);
-        display: inline-block;
-        padding: 6px 14px;
-        border-radius: 40px;
-        font-size: 13px;
-        font-weight: 500;
-        color: #2d5a3b;
-        margin-bottom: 20px;
-    }
+	.hero-badge {
+	background: rgba(47, 94, 65, 0.1);
+	display: inline-block;
+	padding: 6px 14px;
+	border-radius: 40px;
+	font-size: 13px;
+	color: #2d5a3b;
+	margin-bottom: 20px;
+	}
 
-    .hero-title {
-        font-size: 48px;
-        font-weight: 800;
-        margin-bottom: 16px;
-        line-height: 1.2;
-    }
+	.hero-title {
+	font-size: 48px;
+	font-weight: 800;
+	margin-bottom: 16px;
+	}
 
-    .text-gradient {
-        background: linear-gradient(135deg, #2d5a3b 0%, #5f8c69 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
+	.text-gradient {
+	background: linear-gradient(135deg, #2d5a3b 0%, #5f8c69 100%);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	}
 
-    .hero-subtitle {
-        font-size: 18px;
-        color: #6c7d70;
-        margin-bottom: 32px;
-        max-width: 400px;
-    }
+	.hero-subtitle {
+	font-size: 18px;
+	color: #6c7d70;
+	margin-bottom: 32px;
+	max-width: 400px;
+	}
 
-    .hero-stats {
-        display: flex;
-        gap: 32px;
-    }
+	.floating-icon {
+	position: absolute;
+	width: 60px;
+	height: 60px;
+	background: white;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 28px;
+	box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+	color: #2d5a3b;
+	animation: float 3s ease-in-out infinite;
+	}
 
-    .hero-stat .stat-number {
-        font-size: 32px;
-        font-weight: 800;
-        color: #2d5a3b;
-    }
+	.icon-1 {
+	top: 0;
+	left: 0;
+	}
 
-    .hero-stat .stat-label {
-        font-size: 13px;
-        color: #7d9182;
-    }
+	.icon-2 {
+	top: 50%;
+	right: 0;
+	}
 
-    .hero-decoration {
-        position: relative;
-        width: 200px;
-        height: 200px;
-    }
+	.icon-3 {
+	bottom: 0;
+	left: 50%;
+	}
 
-    .floating-icon {
-        position: absolute;
-        width: 60px;
-        height: 60px;
-        background: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 28px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-        color: #2d5a3b;
-        animation: float 3s ease-in-out infinite;
-    }
+	@@keyframes float {
+	0%, 100% {
+	transform: translateY(0);
+	}
 
-    .icon-1 { top: 0; left: 0; animation-delay: 0s; }
-    .icon-2 { top: 50%; right: 0; animation-delay: 0.5s; }
-    .icon-3 { bottom: 0; left: 50%; animation-delay: 1s; }
+	50% {
+	transform: translateY(-10px);
+	}
+	}
 
-    @@keyframes float {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-10px); }
-    }
+	.metrics-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	gap: 24px;
+	margin-bottom: 40px;
+	}
 
-    /* Metrics Grid */
-    .metrics-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 24px;
-    }
+	.metric-card {
+	background: white;
+	border-radius: 24px;
+	padding: 24px;
+	box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+	}
 
-    .metric-card {
-        background: white;
-        border-radius: 24px;
-        padding: 24px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-    }
+	.metric-icon {
+	width: 48px;
+	height: 48px;
+	background: #e8f5e9;
+	border-radius: 16px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 24px;
+	color: #2d5a3b;
+	margin-bottom: 16px;
+	}
 
-    .metric-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-    }
+	.metric-value {
+	font-size: 32px;
+	font-weight: 800;
+	color: #2d5a3b;
+	}
 
-    .metric-icon {
-        width: 48px;
-        height: 48px;
-        background: #e8f5e9;
-        border-radius: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
-        color: #2d5a3b;
-        margin-bottom: 16px;
-    }
+	.metric-label {
+	color: #7d9182;
+	font-size: 14px;
+	}
 
-    .metric-info {
-        margin-bottom: 16px;
-    }
+	.metric-progress {
+	height: 4px;
+	background: #e9ecef;
+	border-radius: 2px;
+	overflow: hidden;
+	margin-top: 16px;
+	}
 
-    .metric-value {
-        font-size: 32px;
-        font-weight: 800;
-        color: #2d5a3b;
-    }
+	.progress-bar-fill {
+	height: 100%;
+	background: linear-gradient(90deg, #2d5a3b, #5f8c69);
+	border-radius: 2px;
+	transition: width 0.5s ease;
+	}
 
-    .metric-value span {
-        font-size: 14px;
-        font-weight: 400;
-        color: #7d9182;
-    }
+	.activity-card {
+	background: white;
+	border-radius: 24px;
+	padding: 24px;
+	box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+	height: 100%;
+	}
 
-    .metric-label {
-        color: #7d9182;
-        font-size: 14px;
-    }
+	.activity-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 24px;
+	}
 
-    .metric-progress {
-        height: 4px;
-        background: #e9ecef;
-        border-radius: 2px;
-        overflow: hidden;
-    }
+	.activity-header h3 {
+	font-size: 18px;
+	font-weight: 700;
+	color: #2d5a3b;
+	margin: 0;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	}
 
-    .progress-bar-fill {
-        height: 100%;
-        background: linear-gradient(90deg, #2d5a3b, #5f8c69);
-        border-radius: 2px;
-        transition: width 0.5s ease;
-    }
+	.timeline-item {
+	display: flex;
+	gap: 16px;
+	margin-bottom: 20px;
+	}
 
-    /* Quick Access */
-    .section-title {
-        font-size: 20px;
-        font-weight: 700;
-        color: #2d5a3b;
-        margin-bottom: 20px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
+	.timeline-dot {
+	width: 8px;
+	height: 8px;
+	background: #2d5a3b;
+	border-radius: 50%;
+	margin-top: 6px;
+	}
 
-    .quick-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 20px;
-    }
+	.timeline-title {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 4px;
+	}
 
-    .quick-card {
-        background: white;
-        border-radius: 20px;
-        padding: 20px;
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        border: 1px solid #e9ecef;
-    }
+	.timeline-time {
+	font-size: 11px;
+	color: #7d9182;
+	}
 
-    .quick-card:hover {
-        transform: translateX(8px);
-        text-decoration: none;
-    }
+	.timeline-desc {
+	font-size: 13px;
+	color: #6c7d70;
+	}
 
-    .quick-card-primary { border-left: 4px solid #2d5a3b; }
-    .quick-card-success { border-left: 4px solid #4caf50; }
-    .quick-card-info { border-left: 4px solid #2196f3; }
+	.empty-state {
+	text-align: center;
+	padding: 40px;
+	}
 
-    .quick-card-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
-    }
+	.empty-state i {
+	font-size: 48px;
+	color: #c5d4ca;
+	}
 
-    .quick-card-primary .quick-card-icon { background: #e8f5e9; color: #2d5a3b; }
-    .quick-card-success .quick-card-icon { background: #e8f5e9; color: #4caf50; }
-    .quick-card-info .quick-card-icon { background: #e3f2fd; color: #2196f3; }
+	.kpi-list {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	}
 
-    .quick-card-info h3 {
-        font-size: 16px;
-        font-weight: 700;
-        color: #2d5a3b;
-        margin: 0;
-    }
+	.kpi-item {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding-bottom: 16px;
+	border-bottom: 1px solid #e9ecef;
+	}
 
-    .quick-card-info p {
-        font-size: 13px;
-        color: #7d9182;
-        margin: 4px 0 0;
-    }
+	.kpi-value {
+	font-size: 24px;
+	font-weight: 800;
+	color: #2d5a3b;
+	}
 
-    .quick-card-arrow {
-        margin-left: auto;
-        color: #c5d4ca;
-        transition: all 0.3s ease;
-    }
+	.quick-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+	gap: 20px;
+	}
 
-    .quick-card:hover .quick-card-arrow {
-        transform: translateX(4px);
-        color: #2d5a3b;
-    }
+	.quick-card {
+	background: white;
+	border-radius: 20px;
+	padding: 20px;
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	text-decoration: none;
+	box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+	border: 1px solid #e9ecef;
+	transition: all 0.3s;
+	}
 
-    /* Activity Section */
-    .activity-card {
-        background: white;
-        border-radius: 24px;
-        padding: 24px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        height: 100%;
-    }
+	.quick-card:hover {
+	transform: translateX(8px);
+	}
 
-    .activity-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 24px;
-    }
+	.quick-card-primary {
+	border-left: 4px solid #2d5a3b;
+	}
 
-    .activity-header h3 {
-        font-size: 18px;
-        font-weight: 700;
-        color: #2d5a3b;
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
+	.quick-card-success {
+	border-left: 4px solid #4caf50;
+	}
 
-    .activity-timeline {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-    }
+	.quick-card-info {
+	border-left: 4px solid #2196f3;
+	}
 
-    .timeline-item {
-        display: flex;
-        gap: 16px;
-        position: relative;
-    }
+	.quick-card-icon {
+	width: 48px;
+	height: 48px;
+	border-radius: 16px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 24px;
+	}
 
-    .timeline-dot {
-        width: 8px;
-        height: 8px;
-        background: #2d5a3b;
-        border-radius: 50%;
-        margin-top: 6px;
-        position: relative;
-    }
+	.quick-card-primary .quick-card-icon {
+	background: #e8f5e9;
+	color: #2d5a3b;
+	}
 
-    .timeline-dot::before {
-        content: '';
-        position: absolute;
-        width: 2px;
-        height: 40px;
-        background: #e9ecef;
-        left: 3px;
-        top: 12px;
-    }
+	.quick-card-success .quick-card-icon {
+	background: #e8f5e9;
+	color: #4caf50;
+	}
 
-    .timeline-item:last-child .timeline-dot::before {
-        display: none;
-    }
+	.quick-card-info .quick-card-icon {
+	background: #e3f2fd;
+	color: #2196f3;
+	}
 
-    .timeline-title {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 4px;
-    }
+	.quick-card-info h3 {
+	font-size: 16px;
+	font-weight: 700;
+	color: #2d5a3b;
+	margin: 0;
+	}
 
-    .timeline-time {
-        font-size: 11px;
-        color: #7d9182;
-    }
+	.quick-card-info p {
+	font-size: 13px;
+	color: #7d9182;
+	margin: 4px 0 0;
+	}
 
-    .timeline-desc {
-        font-size: 13px;
-        color: #6c7d70;
-    }
+	.quick-card-arrow {
+	margin-left: auto;
+	color: #c5d4ca;
+	transition: all 0.3s;
+	}
 
-    .kpi-list {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-    }
+	.quick-card:hover .quick-card-arrow {
+	transform: translateX(4px);
+	color: #2d5a3b;
+	}
 
-    .kpi-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding-bottom: 16px;
-        border-bottom: 1px solid #e9ecef;
-    }
+	@@media (max-width: 768px) {
+	.hero-title {
+	font-size: 32px;
+	}
 
-    .kpi-item:last-child {
-        border-bottom: none;
-        padding-bottom: 0;
-    }
+	.hero-section {
+	padding: 32px;
+	}
 
-    .kpi-label {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 14px;
-        color: #6c7d70;
-    }
+	.metrics-grid {
+	grid-template-columns: 1fr;
+	}
 
-    .kpi-value {
-        font-size: 24px;
-        font-weight: 800;
-        color: #2d5a3b;
-    }
-
-    .empty-state {
-        text-align: center;
-        padding: 40px;
-    }
-
-    .empty-state i {
-        font-size: 48px;
-        color: #c5d4ca;
-    }
-
-    .empty-state p {
-        color: #7d9182;
-        margin-top: 12px;
-    }
-
-    /* Responsive */
-    @@media (max-width: 768px) {
-        .dashboard-container {
-            padding: 16px;
-        }
-
-        .hero-section {
-            padding: 32px;
-        }
-
-        .hero-title {
-            font-size: 32px;
-        }
-
-        .hero-stats {
-            gap: 20px;
-        }
-
-        .hero-stat .stat-number {
-            font-size: 24px;
-        }
-
-        .metrics-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .quick-grid {
-            grid-template-columns: 1fr;
-        }
-    }
+	.quick-grid {
+	grid-template-columns: 1fr;
+	}
+	}
 </style>

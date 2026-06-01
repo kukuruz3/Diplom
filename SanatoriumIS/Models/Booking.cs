@@ -36,6 +36,12 @@ namespace SanatoriumIS.Models
         [DataType(DataType.Date)]
         public DateTime? CheckedOutAt { get; set; }
 
+        [Display(Name = "Цена за ночь на момент бронирования")]
+        public decimal PricePerNightAtBooking { get; set; }
+
+        [Display(Name = "Общая стоимость проживания")]
+        public decimal TotalPrice { get; set; }
+
         // Флаг выселения
         [Display(Name = "Выселен")]
         public bool IsCheckedOut { get; set; } = false;
