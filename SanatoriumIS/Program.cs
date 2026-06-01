@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SanatoriumIS.Data;
@@ -52,7 +53,10 @@ builder.Services.AddAuthorization(options =>
         context.User.IsInRole("ExecutingDoctor")));
 });
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add(new AuthorizeFilter());
+});
 builder.Services.AddScoped<RoomOccupancyService>();
 builder.Services.AddHostedService<RoomOccupancyBackgroundService>();
 
@@ -99,6 +103,6 @@ app.UseAuthorization();
 app.UseMiddleware<AuditMiddleware>();
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}").AllowAnonymous();
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
