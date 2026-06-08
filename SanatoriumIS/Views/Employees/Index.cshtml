@@ -239,21 +239,13 @@
         // Копирование пароля при создании сотрудника
         $('#copyNewPasswordBtn').on('click', function() {
             const password = $('#newEmployeePassword').text();
-            navigator.clipboard.writeText(password).then(function() {
-                alert('Пароль скопирован в буфер обмена');
-            }).catch(function() {
-                alert('Не удалось скопировать пароль');
-            });
+            navigator.clipboard.writeText(password);
         });
 
         // Копирование пароля при сбросе
         $('#copyResetPasswordBtn').on('click', function() {
             const password = $('#resetPassword').text();
-            navigator.clipboard.writeText(password).then(function() {
-                alert('Пароль скопирован в буфер обмена');
-            }).catch(function() {
-                alert('Не удалось скопировать пароль');
-            });
+            navigator.clipboard.writeText(password);
         });
 
         // Проверяем TempData и показываем модальное окно
