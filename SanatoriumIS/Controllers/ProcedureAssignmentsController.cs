@@ -434,11 +434,31 @@ namespace SanatoriumIS.Controllers
         public async Task<IActionResult> Report(DateTime? date, int? clientId, string? status)
         {
             var selectedDate = date ?? DateTime.Today;
+
+            // Получаем клиентов ТОЛЬКО с активным бронированием на выбранную дату
+            var activeBookings = await _context.Bookings
+                .Where(b => b.CheckIn.Date <= selectedDate.Date && b.CheckOut.Date > selectedDate.Date)
+                .ToListAsync();
+
+            var clientIds = new List<int>();
+            foreach (var booking in activeBookings)
+            {
+                clientIds.Add(booking.ClientId);
+                if (booking.SecondClientId.HasValue)
+                    clientIds.Add(booking.SecondClientId.Value);
+            }
+            clientIds = clientIds.Distinct().ToList();
+
+            var availableClients = await _context.Clients
+                .Where(c => clientIds.Contains(c.Id))
+                .OrderBy(c => c.FullName)
+                .ToListAsync();
+
             var viewModel = new ProcedureReportViewModel
             {
                 SelectedDate = selectedDate,
                 SelectedClientId = clientId,
-                Clients = await _context.Clients.OrderBy(c => c.FullName).ToListAsync()
+                Clients = availableClients  // ← только клиенты с активным бронированием
             };
 
             var query = _context.ProcedureAssignments
@@ -446,7 +466,7 @@ namespace SanatoriumIS.Controllers
                 .Include(a => a.Procedure)
                 .Include(a => a.ProcedureRoom)
                 .Include(a => a.Employee)
-                .Where(a => a.ProcedureDate.Date == selectedDate.Date && a.Status == "Выполнена")  // <-- ТОЛЬКО ВЫПОЛНЕННЫЕ
+                .Where(a => a.ProcedureDate.Date == selectedDate.Date && a.Status == "Выполнена")
                 .AsQueryable();
 
             if (clientId.HasValue && clientId.Value > 0)
@@ -473,12 +493,11 @@ namespace SanatoriumIS.Controllers
                 Status = a.Status ?? "Выполнена"
             }).ToList();
 
-            // Для фильтра статусов
             var statuses = new List<SelectListItem>
-    {
-        new SelectListItem { Value = "", Text = "Все статусы" },
-        new SelectListItem { Value = "Выполнена", Text = "Выполнена" }
-    };
+            {
+                new SelectListItem { Value = "", Text = "Все статусы" },
+                new SelectListItem { Value = "Выполнена", Text = "Выполнена" }
+            };
             ViewBag.Statuses = statuses;
             ViewBag.SelectedStatus = status;
 
