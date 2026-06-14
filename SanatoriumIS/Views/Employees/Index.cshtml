@@ -245,28 +245,25 @@
             function onFail() {
                 alert('Не удалось скопировать пароль');
             }
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(text).then(onSuccess).catch(function() {
-                    fallbackCopy(text, onSuccess, onFail);
-                });
-            } else {
-                fallbackCopy(text, onSuccess, onFail);
-            }
-        }
 
-        function fallbackCopy(text, onSuccess, onFail) {
+            // execCommand работает по HTTP; clipboard API — только по HTTPS
             const el = document.createElement('textarea');
             el.value = text;
-            el.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+            el.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;';
             document.body.appendChild(el);
             el.focus();
             el.select();
-            try {
-                document.execCommand('copy') ? onSuccess() : onFail();
-            } catch (e) {
+            let copied = false;
+            try { copied = document.execCommand('copy'); } catch (e) {}
+            document.body.removeChild(el);
+
+            if (copied) {
+                onSuccess();
+            } else if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(onSuccess).catch(onFail);
+            } else {
                 onFail();
             }
-            document.body.removeChild(el);
         }
 
         // Копирование пароля при создании сотрудника

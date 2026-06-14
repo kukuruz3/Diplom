@@ -128,7 +128,8 @@ namespace SanatoriumIS.Controllers
                 }
                 else
                 {
-                    salaryStr = salaryStr.Replace(" ", "").Replace(",", ".");
+                    salaryStr = System.Text.RegularExpressions.Regex.Replace(salaryStr, @"[^\d,.]", "").Replace(",", ".");
+                    ModelState.Remove("Salary");
                     if (decimal.TryParse(salaryStr, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal salaryValue))
                     {
                         employee.Salary = salaryValue;
@@ -301,7 +302,8 @@ namespace SanatoriumIS.Controllers
                 }
                 else
                 {
-                    salaryStr = salaryStr.Replace(" ", "").Replace(",", ".");
+                    salaryStr = System.Text.RegularExpressions.Regex.Replace(salaryStr, @"[^\d,.]", "").Replace(",", ".");
+                    ModelState.Remove("Salary");
                     if (decimal.TryParse(salaryStr, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal salaryValue))
                     {
                         employee.Salary = salaryValue;

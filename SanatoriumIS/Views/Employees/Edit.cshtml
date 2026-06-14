@@ -95,7 +95,7 @@
                                     <i class="bi bi-currency-ruble me-1 text-success"></i> Зарплата (руб)
                                 </label>
                                 <input asp-for="Salary" id="SalaryInput" class="form-control form-control-lg rounded-3"
-                                       type="text" value="@Model.Salary.ToString("N0")" style="background-color: #f8f9fc;" />
+                                       type="text" value="@((int)Model.Salary)" style="background-color: #f8f9fc;" />
                                 <span asp-validation-for="Salary" class="text-danger small mt-1"></span>
                             </div>
 
@@ -185,6 +185,12 @@
         }
         });
         });
+
+        // Форматируем зарплату при загрузке страницы (только визуально)
+        var salaryRaw = $('#SalaryInput').val().replace(/[^0-9]/g, '');
+        if (salaryRaw) {
+            $('#SalaryInput').val(parseInt(salaryRaw).toLocaleString('ru-RU'));
+        }
 
         $('#employeeForm').on('submit', function() {
         var salaryInput = $('#SalaryInput');
