@@ -236,24 +236,47 @@
 
 @section Scripts {
     <script>
+        function copyToClipboard(text, btn) {
+            function onSuccess() {
+                const original = $(btn).html();
+                $(btn).html('<i class="bi bi-check"></i> Скопировано').prop('disabled', true);
+                setTimeout(() => $(btn).html(original).prop('disabled', false), 2000);
+            }
+            function onFail() {
+                alert('Не удалось скопировать пароль');
+            }
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(onSuccess).catch(function() {
+                    fallbackCopy(text, onSuccess, onFail);
+                });
+            } else {
+                fallbackCopy(text, onSuccess, onFail);
+            }
+        }
+
+        function fallbackCopy(text, onSuccess, onFail) {
+            const el = document.createElement('textarea');
+            el.value = text;
+            el.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+            document.body.appendChild(el);
+            el.focus();
+            el.select();
+            try {
+                document.execCommand('copy') ? onSuccess() : onFail();
+            } catch (e) {
+                onFail();
+            }
+            document.body.removeChild(el);
+        }
+
         // Копирование пароля при создании сотрудника
         $('#copyNewPasswordBtn').on('click', function() {
-            const password = $('#newEmployeePassword').text();
-            navigator.clipboard.writeText(password).then(function() {
-                alert('Пароль скопирован в буфер обмена');
-            }).catch(function() {
-                alert('Не удалось скопировать пароль');
-            });
+            copyToClipboard($('#newEmployeePassword').text(), this);
         });
 
         // Копирование пароля при сбросе
         $('#copyResetPasswordBtn').on('click', function() {
-            const password = $('#resetPassword').text();
-            navigator.clipboard.writeText(password).then(function() {
-                alert('Пароль скопирован в буфер обмена');
-            }).catch(function() {
-                alert('Не удалось скопировать пароль');
-            });
+            copyToClipboard($('#resetPassword').text(), this);
         });
 
         // Проверяем TempData и показываем модальное окно
