@@ -189,7 +189,7 @@
         $('#employeeForm').on('submit', function() {
         var salaryInput = $('#SalaryInput');
         if (salaryInput.length) {
-        var cleanValue = salaryInput.val().replace(/\s/g, '');
+        var cleanValue = salaryInput.val().replace(/[^0-9]/g, '');
         salaryInput.val(cleanValue);
         }
         });
