@@ -41,8 +41,9 @@ namespace SanatoriumIS.Controllers
         {
             if (!string.IsNullOrEmpty(client.PassportRaw))
             {
-                string cleanPassport = client.PassportRaw.Replace(" ", "");
+                var cleanPassport = client.PassportRaw.Replace(" ", "");
                 client.PassportHash = BCrypt.Net.BCrypt.HashPassword(cleanPassport);
+                client.PassportLastFour = cleanPassport.Length >= 4 ? cleanPassport[^4..] : "****";
             }
             client.PassportRaw = null;
 
@@ -78,8 +79,9 @@ namespace SanatoriumIS.Controllers
 
             if (!string.IsNullOrEmpty(client.PassportRaw))
             {
-                string cleanPassport = client.PassportRaw.Replace(" ", "");
+                var cleanPassport = client.PassportRaw.Replace(" ", "");
                 existingClient.PassportHash = BCrypt.Net.BCrypt.HashPassword(cleanPassport);
+                existingClient.PassportLastFour = cleanPassport.Length >= 4 ? cleanPassport[^4..] : "****";
             }
 
             if (ModelState.IsValid)

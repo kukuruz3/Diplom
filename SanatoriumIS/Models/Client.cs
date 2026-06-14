@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using BCrypt.Net;
 
 namespace SanatoriumIS.Models
 {
@@ -14,12 +15,17 @@ namespace SanatoriumIS.Models
 
         [Display(Name = "Паспорт")]
         [RegularExpression(@"^\d{4}\s\d{6}$", ErrorMessage = "Неверный формат паспорта. Пример: 1234 567890")]
-        [NotMapped] // Это поле не сохраняется в БД
+        [NotMapped]
         public string? PassportRaw { get; set; }
 
         // Хеш паспорта (хранится в БД)
         [Display(Name = "Паспорт")]
         public string? PassportHash { get; set; }
+
+        // Последние 4 цифры паспорта для отображения
+        [Display(Name = "Последние цифры паспорта")]
+        [StringLength(4, MinimumLength = 4, ErrorMessage = "Должно быть 4 цифры")]
+        public string? PassportLastFour { get; set; }
 
         [Display(Name = "Телефон")]
         [Required(ErrorMessage = "Введите номер телефона")]
@@ -30,6 +36,10 @@ namespace SanatoriumIS.Models
         [Display(Name = "Дата рождения")]
         [DataType(DataType.Date)]
         public DateTime BirthDate { get; set; }
+
+        // Отображение маски паспорта (для списка клиентов)
+        [NotMapped]
+        public string PassportMask => !string.IsNullOrEmpty(PassportLastFour) ? $"**** **{PassportLastFour}" : "Не указан";
 
         // Проверка паспорта при вводе
         public bool VerifyPassport(string passport)
