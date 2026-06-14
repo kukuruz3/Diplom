@@ -243,27 +243,29 @@
                 setTimeout(() => $(btn).html(original).prop('disabled', false), 2000);
             }
             function onFail() {
-                alert('Не удалось скопировать пароль');
+                window.prompt('Скопируйте пароль вручную (Ctrl+C):', text);
             }
 
-            // execCommand работает по HTTP; clipboard API — только по HTTPS
+            // navigator.clipboard работает только по HTTPS
+            if (window.isSecureContext && navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(onSuccess).catch(function() { legacyCopy(text, onSuccess, onFail); });
+            } else {
+                legacyCopy(text, onSuccess, onFail);
+            }
+        }
+
+        function legacyCopy(text, onSuccess, onFail) {
             const el = document.createElement('textarea');
             el.value = text;
-            el.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;';
+            el.setAttribute('readonly', '');
+            el.style.cssText = 'position:absolute;left:-9999px;top:-9999px;';
             document.body.appendChild(el);
-            el.focus();
             el.select();
+            el.setSelectionRange(0, 99999);
             let copied = false;
             try { copied = document.execCommand('copy'); } catch (e) {}
             document.body.removeChild(el);
-
-            if (copied) {
-                onSuccess();
-            } else if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(text).then(onSuccess).catch(onFail);
-            } else {
-                onFail();
-            }
+            copied ? onSuccess() : onFail();
         }
 
         // Копирование пароля при создании сотрудника
